@@ -1,0 +1,413 @@
+{
+ "vaiven-del-mar-fe": {
+  "slug": "vaiven-del-mar-fe",
+  "title": "Vaiven del Mar FE",
+  "images": [
+   "/sites/default/files/2026-09/IMG1370.jpg",
+   "/sites/default/files/2026-09/IMG1371.jpg",
+   "/sites/default/files/2026-09/IMG1372.jpg",
+   "/sites/default/files/2026-09/IMG9870.jpg",
+   "/sites/default/files/2026-09/IMG9871.jpg",
+   "/sites/default/files/2026-09/IMG9875.jpg",
+   "/sites/default/files/2026-09/IMG9879.jpg",
+   "/sites/default/files/2026-09/IMG9882.jpg",
+   "/sites/default/files/2026-09/IMG9888.jpg",
+   "/sites/default/files/2026-09/IMG9894.jpg",
+   "/sites/default/files/2026-09/IMG9896.jpg",
+   "/sites/default/files/2026-09/IMG9898.jpg",
+   "/sites/default/files/2026-09/IMG9899.jpg",
+   "/sites/default/files/2026-09/IMG9904.jpg",
+   "/sites/default/files/2026-09/IMG9905.jpg",
+   "/sites/default/files/2026-09/IMG9908.jpg",
+   "/sites/default/files/2026-09/IMG9912.jpg",
+   "/sites/default/files/2026-09/IMG1373.jpg",
+   "/sites/default/files/2026-09/IMG1380.jpg",
+   "/sites/default/files/2026-09/RLP4572_0.jpg"
+  ],
+  "image_count_total": 20,
+  "desc": [
+   "Bienvenido a Vaivén del Mar, uno de los condominios más exclusivos y tranquilos dentro de Playacar Fase 2. Rodeado de jardines tropicales, caminos llenos de palmeras y una increíble atmósfera de paz, este espacio es perfecto para quienes buscan comodidad, estilo y una experiencia auténtica en Playa del Carmen.",
+   "Playacar es un fraccionamiento con gran cantidad de areas verdes y de selva que acogen, un campo de golf, resorts, playas, ruinas arqueológicas y una gran diversidad de restaurantes."
+  ],
+  "fee": 250,
+  "occ": 8,
+  "amenities": {
+   "Number of Beds": "3",
+   "Bathrooms": "3.00",
+   "Furnished": true,
+   "Bedroom quantity": "3",
+   "Balcony/Terrace": "Terrace",
+   "Jacuzzi": false,
+   "Equipped Kitchen": true,
+   "Washing Machine": true,
+   "Dryer": true,
+   "TV": "2",
+   "Internet/Wifi": true,
+   "Air Conditioner": true,
+   "Parking places": "1",
+   "GYM": true,
+   "Elevator": true,
+   "Garden": true,
+   "Disabled access": true,
+   "Pool": "Shared",
+   "Distance to the beach": "1.70 Km"
+  },
+  "extras": [
+   "Safe",
+   "Security",
+   "Reef Beach club Card"
+  ],
+  "beds": [
+   [
+    "King",
+    "2"
+   ],
+   [
+    "Queen",
+    "1"
+   ]
+  ],
+  "lng_lat": [
+   "-87.09993149217794",
+   "20.61275147904386"
+  ]
+ },
+ "vaiven-del-mar-lb": {
+  "slug": "vaiven-del-mar-lb",
+  "title": "Vaiven del Mar LB",
+  "images": [
+   "/sites/default/files/2026-09/RLP4535.jpg",
+   "/sites/default/files/2026-09/RLP4536.jpg",
+   "/sites/default/files/2026-09/RLP4537.jpg",
+   "/sites/default/files/2026-09/RLP4534.jpg",
+   "/sites/default/files/2026-09/RLP4540.jpg",
+   "/sites/default/files/2026-09/RLP4543.jpg",
+   "/sites/default/files/2026-09/RLP4547.jpg",
+   "/sites/default/files/2026-09/RLP4550.jpg",
+   "/sites/default/files/2026-09/RLP4553.jpg",
+   "/sites/default/files/2026-09/RLP4555.jpg",
+   "/sites/default/files/2026-09/RLP4558.jpg",
+   "/sites/default/files/2026-09/RLP4559.jpg",
+   "/sites/default/files/2026-09/RLP4561.jpg",
+   "/sites/default/files/2026-09/RLP4564.jpg",
+   "/sites/default/files/2026-09/RLP4568.jpg",
+   "/sites/default/files/2026-09/RLP4570.jpg",
+   "/sites/default/files/2026-09/RLP4532.jpg",
+   "/sites/default/files/2026-09/RLP4533.jpg",
+   "/sites/default/files/2026-09/RLP4572.jpg"
+  ],
+  "image_count_total": 19,
+  "desc": [
+   "Bienvenido a Vaivén del Mar, uno de los condominios más exclusivos y tranquilos dentro de Playacar Fase 2. Rodeado de jardines tropicales, caminos llenos de palmeras y una increíble atmósfera de paz, este espacio es perfecto para quienes buscan comodidad, estilo y una experiencia auténtica en Playa del Carmen.",
+   "Playacar es un fraccionamiento con gran cantidad de areas verdes y de selva que acogen, un campo de golf, resorts, playas, ruinas arqueológicas y una gran diversidad de restaurantes."
+  ],
+  "fee": 250,
+  "occ": 8,
+  "amenities": {
+   "Number of Beds": "3",
+   "Bathrooms": "3.00",
+   "Furnished": true,
+   "Bedroom quantity": "3",
+   "Balcony/Terrace": "Terrace",
+   "Jacuzzi": false,
+   "Equipped Kitchen": true,
+   "Washing Machine": true,
+   "Dryer": true,
+   "TV": "1",
+   "Internet/Wifi": true,
+   "Air Conditioner": true,
+   "Parking places": "1",
+   "GYM": true,
+   "Elevator": true,
+   "Garden": true,
+   "Disabled access": true,
+   "Pool": "Shared",
+   "Distance to the beach": "1.70 Km"
+  },
+  "extras": [
+   "Safe",
+   "Reef Beach club",
+   "Security"
+  ],
+  "beds": [
+   [
+    "King",
+    "2"
+   ],
+   [
+    "Queen",
+    "2"
+   ]
+  ],
+  "lng_lat": [
+   "-87.09993149217794",
+   "20.61275147904386"
+  ]
+ },
+ "solea-5": {
+  "slug": "solea-5",
+  "title": "Solea 5",
+  "images": [
+   "/sites/default/files/2026-09/RLP8226_1.jpg",
+   "/sites/default/files/2026-09/RLP8214_1.jpg",
+   "/sites/default/files/2026-09/RLP8215_1.jpg",
+   "/sites/default/files/2026-09/RLP8218_1.jpg",
+   "/sites/default/files/2026-09/RLP8224_1.jpg",
+   "/sites/default/files/2026-09/RLP8225_1.jpg",
+   "/sites/default/files/2026-09/RLP_2273.jpg",
+   "/sites/default/files/2026-09/RLP_2275.jpg",
+   "/sites/default/files/2026-09/RLP_2260.jpg",
+   "/sites/default/files/2026-09/RLP_2263.jpg",
+   "/sites/default/files/2026-09/RLP_2265.jpg",
+   "/sites/default/files/2026-09/RLP_2268.jpg",
+   "/sites/default/files/2026-09/RLP_2269.jpg",
+   "/sites/default/files/2026-09/RLP_2270.jpg",
+   "/sites/default/files/2026-09/RLP_2280.jpg",
+   "/sites/default/files/2026-09/RLP_2281.jpg",
+   "/sites/default/files/2026-09/RLP_2282.jpg",
+   "/sites/default/files/2026-09/RL7974_1.jpg",
+   "/sites/default/files/2026-09/RLP_2286_1.jpg"
+  ],
+  "image_count_total": 19,
+  "desc": [
+   "Una Propiedad ubicada en el quinto nivel donde la fachada del balcón da sobre la calle privada 15 bis, no tienes edificios en frente lo cual hace que corra una brisa agradable en el departamento, en el roof encontraras un gimnasio bien equipado camastros y mesas para estar tomando el sol o un poco de sombra con su pergolado, también cuenta con sanitarios en el roof para mayor comodidad de los huespedes.",
+   "La cocina esta muy equipada y con muebles cómodos y minimalistas, contamos con dos sillas de playa y una sombrilla para que puedan utilizarlas en cualquiera de las playas cercanas."
+  ],
+  "fee": 80,
+  "occ": 4,
+  "amenities": {
+   "Number of Beds": "1",
+   "Bathrooms": "1.00",
+   "Furnished": true,
+   "Bedroom quantity": "1",
+   "Balcony/Terrace": "Terrace",
+   "Jacuzzi": false,
+   "Equipped Kitchen": true,
+   "Washing Machine": true,
+   "Dryer": true,
+   "TV": "2",
+   "Internet/Wifi": true,
+   "Air Conditioner": true,
+   "Parking places": "1",
+   "GYM": true,
+   "Elevator": true,
+   "Garden": false,
+   "Disabled access": true,
+   "Pool": "Shared",
+   "Distance to the beach": "0.70 Km"
+  },
+  "extras": [
+   "Safe",
+   "Security"
+  ],
+  "beds": [
+   [
+    "King",
+    "1"
+   ]
+  ],
+  "lng_lat": [
+   "-87.07659940619276",
+   "20.633339564335596"
+  ]
+ },
+ "solea-4": {
+  "slug": "solea-4",
+  "title": "Solea 4",
+  "images": [
+   "/sites/default/files/2026-09/RLP8226_0.jpg",
+   "/sites/default/files/2026-09/RLP8224_0.jpg",
+   "/sites/default/files/2026-09/RLP8225_0.jpg",
+   "/sites/default/files/2026-09/RLP8214_0.jpg",
+   "/sites/default/files/2026-09/RLP8215_0.jpg",
+   "/sites/default/files/2026-09/RLP8218_0.jpg",
+   "/sites/default/files/2026-09/RLP5445.jpg",
+   "/sites/default/files/2026-09/RLP5435.jpg",
+   "/sites/default/files/2026-09/RLP5438.jpg",
+   "/sites/default/files/2026-09/RLP5439.jpg",
+   "/sites/default/files/2026-09/RLP5440.jpg",
+   "/sites/default/files/2026-09/RLP5441.jpg",
+   "/sites/default/files/2026-09/RLP5442.jpg",
+   "/sites/default/files/2026-09/RLP5449.jpg",
+   "/sites/default/files/2026-09/RLP5450.jpg",
+   "/sites/default/files/2026-09/RL7974_0.jpg",
+   "/sites/default/files/2026-09/RLP_2286_0.jpg"
+  ],
+  "image_count_total": 17,
+  "desc": [
+   "Una Propiedad ubicada en el cuarto nivel donde la fachada del balcón da sobre la calle 34, no tienes edificios en frente lo cual hace que corra una brisa agradable en el departamento, teniendo una vista hacia el deportivo Mario Villanueva, en el roof encontraras un gimnasio bien equipado camastros y mesas para estar tomando el sol o un poco de sombra con su pergolado, también cuenta con sanitarios en el roof para mayor comodidad de los huespedes.",
+   "La cocina esta muy equipada y con muebles cómodos y minimalistas, contamos con dos sillas de playa y una sombrilla para que puedan utilizarlas en cualquiera de las playas cercanas."
+  ],
+  "fee": 73,
+  "occ": 4,
+  "amenities": {
+   "Number of Beds": "1",
+   "Bathrooms": "1.00",
+   "Furnished": true,
+   "Balcony/Terrace": "Balcony",
+   "Jacuzzi": false,
+   "Equipped Kitchen": true,
+   "Washing Machine": true,
+   "Dryer": true,
+   "TV": "2",
+   "Internet/Wifi": true,
+   "Air Conditioner": true,
+   "Parking places": "1",
+   "GYM": true,
+   "Elevator": true,
+   "Garden": false,
+   "Disabled access": true,
+   "Pool": "Shared",
+   "Distance to the beach": "0.70 Km"
+  },
+  "extras": [
+   "Safe",
+   "Security"
+  ],
+  "beds": [
+   [
+    "King",
+    "1"
+   ]
+  ],
+  "lng_lat": [
+   "-87.07659940619276",
+   "20.633339564335596"
+  ]
+ },
+ "solea-2": {
+  "slug": "solea-2",
+  "title": "Solea 2",
+  "images": [
+   "/sites/default/files/2026-09/RLP8226.jpg",
+   "/sites/default/files/2026-09/RLP8214.jpg",
+   "/sites/default/files/2026-09/RLP8215.jpg",
+   "/sites/default/files/2026-09/RLP8218.jpg",
+   "/sites/default/files/2026-09/RLP8224.jpg",
+   "/sites/default/files/2026-09/RLP8225.jpg",
+   "/sites/default/files/2026-09/RLP8240.jpg",
+   "/sites/default/files/2026-09/RLP8241.jpg",
+   "/sites/default/files/2026-09/RLP8244.jpg",
+   "/sites/default/files/2026-09/RLP8228.jpg",
+   "/sites/default/files/2026-09/RLP8230.jpg",
+   "/sites/default/files/2026-09/RLP8231.jpg",
+   "/sites/default/files/2026-09/RLP8247.jpg",
+   "/sites/default/files/2026-09/RLP8248.jpg",
+   "/sites/default/files/2026-09/RLP8250.jpg",
+   "/sites/default/files/2026-09/RL7974.jpg",
+   "/sites/default/files/2026-09/RLP_2286.jpg"
+  ],
+  "image_count_total": 17,
+  "desc": [
+   "Una Propiedad ubicada en el segundo nivel donde la fachada del balcón da sobre la calle 34, no tienes edificios en frente lo cual hace que corra una brisa agradable en el departamento, en el roof encontraras un gimnasio bien equipado camastros y mesas para estar tomando el sol o un poco de sombra con su pergolado, también cuenta con sanitarios en el roof para mayor comodidad de los huespedes.",
+   "La cocina esta muy equipada y con muebles cómodos y minimalistas, contamos con dos sillas de playa y una sombrilla para que puedan utilizarlas en cualquiera de las playas cercanas."
+  ],
+  "fee": 73,
+  "occ": 4,
+  "amenities": {
+   "Number of Beds": "1",
+   "Bathrooms": "1.00",
+   "Furnished": true,
+   "Bedroom quantity": "0",
+   "Balcony/Terrace": "Terrace",
+   "Jacuzzi": false,
+   "Equipped Kitchen": true,
+   "Washing Machine": true,
+   "Dryer": true,
+   "TV": "1",
+   "Internet/Wifi": true,
+   "Air Conditioner": true,
+   "Parking places": "1",
+   "GYM": true,
+   "Elevator": true,
+   "Garden": false,
+   "Disabled access": true,
+   "Pool": "Shared",
+   "Distance to the beach": "0.70 Km"
+  },
+  "extras": [
+   "Security",
+   "Safe"
+  ],
+  "beds": [
+   [
+    "King",
+    "1"
+   ]
+  ],
+  "lng_lat": [
+   "-87.07659940619276",
+   "20.633339564335596"
+  ]
+ },
+ "casa-del-mar": {
+  "slug": "casa-del-mar",
+  "title": "Casa del Mar",
+  "images": [
+   "/sites/default/files/2026-09/IMG4078.jpg",
+   "/sites/default/files/2026-09/IMG4079.jpg",
+   "/sites/default/files/2026-09/IMG4083.jpg",
+   "/sites/default/files/2026-09/IMG4084.jpg",
+   "/sites/default/files/2026-09/IMG4085.jpg",
+   "/sites/default/files/2026-09/IMG4106.jpg",
+   "/sites/default/files/2026-09/IMG4110.jpg",
+   "/sites/default/files/2026-09/IMG4111.jpg",
+   "/sites/default/files/2026-09/IMG4114.jpg",
+   "/sites/default/files/2026-09/IMG4116.jpg",
+   "/sites/default/files/2026-09/IMG4087.jpg",
+   "/sites/default/files/2026-09/IMG4088.jpg",
+   "/sites/default/files/2026-09/IMG4089.jpg",
+   "/sites/default/files/2026-09/IMG4092.jpg",
+   "/sites/default/files/2026-09/IMG4101.jpg",
+   "/sites/default/files/2026-09/IMG4102.jpg",
+   "/sites/default/files/2026-09/IMG4076.jpg"
+  ],
+  "image_count_total": 17,
+  "desc": [
+   "This area of ​​Playa del Carmen isn't entirely new, but unlike other, more crowded areas, it's not saturated with buildings, shops, or people, making it a peaceful, safe, and pleasant place, without being far from everything.",
+   "The Casa del Mar building is right across from the beach. Although our apartment doesn't have an ocean view, you'll only have to walk a few steps to enjoy one."
+  ],
+  "fee": 145,
+  "occ": 6,
+  "amenities": {
+   "Number of Beds": "4",
+   "Bathrooms": "2.50",
+   "Furnished": true,
+   "Bedroom quantity": "2",
+   "Balcony/Terrace": "Terrace",
+   "Jacuzzi": false,
+   "Equipped Kitchen": true,
+   "Washing Machine": true,
+   "Dryer": true,
+   "TV": "3",
+   "Internet/Wifi": true,
+   "Air Conditioner": true,
+   "Parking places": "1",
+   "GYM": false,
+   "Elevator": true,
+   "Garden": false,
+   "Disabled access": true,
+   "Pool": "Shared",
+   "Distance to the beach": "0.05 Km"
+  },
+  "extras": [
+   "Safe",
+   "Dishwasher",
+   "Security"
+  ],
+  "beds": [
+   [
+    "King",
+    "1"
+   ],
+   [
+    "Queen",
+    "1"
+   ]
+  ],
+  "lng_lat": [
+   "-87.07183270619231",
+   "20.638455063982136"
+  ]
+ }
+}
