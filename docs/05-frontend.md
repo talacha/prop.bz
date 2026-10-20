@@ -15,6 +15,8 @@ Live prototype: https://claude.ai/artifact/LmzuGMfaR19Q8VPYmNSvLC (private; sour
 
 Next.js (App Router, React Server Components, ISR for listing pages), TypeScript, Tailwind + Radix primitives, TanStack Query for client data, `react-day-picker` (range, custom day renderer with per-night price), Stripe Elements (Payment Element + Express Checkout Element for Apple/Google Pay/Link), MapLibre GL with MapTiler/Protomaps tiles, `next-intl` (es-MX default, en), Playwright for E2E, Storybook for components, axe in CI.
 
+> Update: the site is implemented in `web/` (Next.js 16 + Sanity). The route table below is the original plan; the implemented routes are localized and section based, see doc 08 section 3.
+
 ## 3. Information architecture
 
 | Route | Purpose |

@@ -77,3 +77,21 @@ Cross-Origin-Opener-Policy: same-origin
 ### Residual risks
 
 Direct bookings carry no marketplace guest-protection program; mitigate with clear policies, ID verification options, damage deposit via card hold, and optional insurance. Delayed payment methods (OXXO/SPEI) lengthen holds, so cap how many dates one unpaid voucher can block.
+
+## Status after the hardening pass (2026-10-20)
+
+Applies to the implemented website (not the full booking backend described above).
+
+| Finding | Status |
+|---|---|
+| B1 object-level access, B2 auth, B3 price tampering, B5 payments, B6 Stripe webhooks | Not applicable yet: no accounts, payments or webhooks exist in the demo |
+| B8 excessive data exposure | **Fixed:** the `address` field was removed from the public dataset; the site never queries private fields |
+| B9 injection / B10 XSS | Inputs validated with zod; React escapes output; JSON-LD escapes `<`; **CSP enforced** |
+| B11 CSRF | Request endpoint accepts only same-origin JSON POSTs |
+| B12 rate limits / DoS | **Done:** app limiter plus a Vercel Firewall rate-limit rule on `/api/requests` |
+| B13 uploads | No uploads on the site |
+| B14 secrets | Revalidation secret rotated and stored as a sensitive Vercel variable |
+| B15 privacy | Demo privacy notice published; nothing is stored; no analytics or tracking cookies |
+| B19 phishing / spoofing | Open: email domain has registrar forwarding only (SPF), no DMARC; revisit when sending email |
+| B20 open redirect | None: no user-controlled redirects |
+| Legacy A2 headers | **Fixed** on the new site (CSP, HSTS, COOP, referrer, permissions) |

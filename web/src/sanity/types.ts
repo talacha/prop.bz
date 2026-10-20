@@ -62,6 +62,7 @@ export type PropertyCardData = {
   area?: Localized
   photos: SanityPhoto[]
   photoCount: number
+  tourRooms?: number
   highlights?: {label: Localized; detail?: Localized}[]
   vacation?: VacationTerms
   rental?: RentalTerms
@@ -71,6 +72,7 @@ export type PropertyCardData = {
 export type PropertyDetail = PropertyCardData & {
   description?: {es?: unknown[]; en?: unknown[]}
   gallery: SanityPhoto[]
+  tour?: TourData | null
   tourUrl?: string
   beds?: {type: string; count: number}[]
   amenities?: {code: string; category: string; label: Localized; detail?: Localized}[]
@@ -117,3 +119,12 @@ export type SiteSettings = {
   usdToMxn?: number
   trustPoints?: Localized[]
 }
+
+export type TourScene = {
+  id: string
+  title: Localized
+  image: string // asset ref of the equirectangular panorama
+  initialYaw?: number
+  links: {to: string; label: Localized; yaw: number; pitch?: number}[]
+}
+export type TourData = {start?: string; externalUrl?: string; scenes: TourScene[]}

@@ -1,6 +1,6 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 import type {ConditionalPropertyCallback, CustomValidator} from 'sanity'
-import {HomeIcon} from '@sanity/icons'
+import {HomeIcon} from '@sanity/icons/Home'
 
 export const LISTING_TYPES = [
   {title: 'Vacation rental (days or weeks)', value: 'vacation'},
@@ -110,6 +110,7 @@ export const property = defineType({
       validation: (r) => r.min(1).max(20),
       options: {layout: 'grid'},
     }),
+    defineField({name: 'tour', type: 'virtualTour', group: 'media'}),
     defineField({
       name: 'tourUrl',
       title: 'Video or 3D tour URL',
@@ -192,12 +193,8 @@ export const property = defineType({
     defineField({name: 'agent', type: 'reference', to: [{type: 'agent'}], group: 'terms'}),
 
     defineField({name: 'area', type: 'reference', to: [{type: 'area'}], group: 'location'}),
-    defineField({
-      name: 'address',
-      type: 'string',
-      group: 'location',
-      description: 'Private. Only shared after a confirmed booking or scheduled viewing.',
-    }),
+    // Deliberately no street-address field: the dataset is public (the site reads it without a token), so exact
+    // addresses and access details belong in the booking backend and are shared only after a confirmed booking.
     defineField({name: 'location', type: 'geopoint', group: 'location'}),
     defineField({
       name: 'showExactPin',

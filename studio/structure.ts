@@ -1,5 +1,6 @@
 import type {StructureResolver} from 'sanity/structure'
-import {CogIcon, HomeIcon} from '@sanity/icons'
+import {CogIcon} from '@sanity/icons/Cog'
+import {HomeIcon} from '@sanity/icons/Home'
 
 const SINGLETONS = ['siteSettings']
 export const singletonTypes = new Set(SINGLETONS)

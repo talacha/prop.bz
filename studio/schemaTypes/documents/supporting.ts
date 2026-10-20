@@ -1,5 +1,11 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
-import {PinIcon, TagIcon, UsersIcon, UserIcon, CogIcon, DocumentIcon, ThLargeIcon} from '@sanity/icons'
+import {PinIcon} from '@sanity/icons/Pin'
+import {TagIcon} from '@sanity/icons/Tag'
+import {UsersIcon} from '@sanity/icons/Users'
+import {UserIcon} from '@sanity/icons/User'
+import {CogIcon} from '@sanity/icons/Cog'
+import {DocumentIcon} from '@sanity/icons/Document'
+import {ThLargeIcon} from '@sanity/icons/ThLarge'
 import {AUDIENCES, LISTING_TYPES} from './property'
 
 export const area = defineType({
@@ -152,7 +158,7 @@ export const siteSettings = defineType({
   type: 'document',
   icon: CogIcon,
   fields: [
-    defineField({name: 'siteName', type: 'string', initialValue: 'A Toda Madre'}),
+    defineField({name: 'siteName', type: 'string', initialValue: 'Property Business SaaS Demo'}),
     defineField({name: 'tagline', type: 'localeString'}),
     defineField({name: 'whatsapp', type: 'string'}),
     defineField({name: 'email', type: 'string'}),

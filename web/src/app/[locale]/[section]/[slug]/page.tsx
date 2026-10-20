@@ -4,10 +4,16 @@ import {notFound} from 'next/navigation'
 import {PortableText} from '@portabletext/react'
 import {Suspense} from 'react'
 import {ActionPanel} from '@/components/ActionPanel'
+import {FaqSection} from '@/components/FaqSection'
 import {Gallery} from '@/components/Gallery'
-import {isLocale, listingTypes, locales, propertyPath, sectionFromSlug, sectionPath, sectionSlugs, type Locale} from '@/i18n/config'
+import {JsonLd} from '@/components/JsonLd'
+import {Price} from '@/components/PrefsProvider'
+import {TourLauncher} from '@/components/TourLauncher'
+import {isLocale, locales, propertyPath, sectionFromSlug, sectionPath, sectionSlugs, type Locale} from '@/i18n/config'
 import {formatMoney, getDictionary, loc} from '@/i18n/dictionary'
-import {assetUrl} from '@/sanity/image'
+import {propertyFaqs} from '@/lib/faq'
+import {breadcrumbLd, faqLd, propertyLd} from '@/lib/jsonld'
+import {abs, languageAlternates, truncate} from '@/lib/site'
 import {getProperty, getSection, getSettings, getSlugs} from '@/sanity/fetch'
 import type {PropertyDetail} from '@/sanity/types'
 
@@ -33,13 +39,25 @@ export async function generateMetadata({params}: {params: Params}): Promise<Meta
   if (!type) return {}
   const p = await getProperty(type, slug)
   if (!p) return {}
-  const cover = p.gallery?.[0]
+  const t = getDictionary(locale)
+  const where = [p.propertyType && t.types[p.propertyType] && `${t.types[p.propertyType]} ${t.inPlace}`, loc(p.area, locale)].filter(Boolean).join(' ')
+  const named = loc(p.title, locale)
+  // Keep the title about 45 characters before the brand: the fullest version that fits, else a shorter one.
+  const fits = [`${named} · ${where}`, `${named} · ${loc(p.area, locale)}`, named].find((c) => c.length <= 45) ?? named
+  const title = loc(p.seo?.title, locale) || fits
+  const price =
+    type === 'vacation' && p.vacation?.nightlyRate ? `${t.from} ${formatMoney(p.vacation.nightlyRate, p.vacation.currency, locale)} ${t.perNight}`
+    : type === 'rental' && p.rental?.monthlyRent ? `${formatMoney(p.rental.monthlyRent, p.rental.currency, locale)} ${t.perMonth}`
+    : type === 'sale' && p.sale?.askingPrice ? formatMoney(p.sale.askingPrice, p.sale.currency, locale)
+    : ''
+  const description = loc(p.seo?.description, locale) || truncate([loc(p.summary, locale), price].filter(Boolean).join(' · '), 158)
+  const paths = Object.fromEntries(locales.map((l) => [l, propertyPath(l, type, slug)])) as Record<Locale, string>
   return {
-    title: loc(p.seo?.title, locale) || loc(p.title, locale),
-    description: loc(p.seo?.description, locale) || loc(p.summary, locale),
-    robots: p.seo?.noIndex || p.isSample ? {index: false} : undefined,
-    alternates: {languages: Object.fromEntries(locales.map((l) => [l, propertyPath(l, type, slug)]))},
-    openGraph: cover ? {images: [`${assetUrl(cover.id)}?w=1200&h=630&fit=crop&auto=format`]} : undefined,
+    title,
+    description,
+    robots: p.seo?.noIndex || p.isSample ? {index: false, follow: true} : undefined,
+    alternates: {canonical: abs(paths[locale]), languages: languageAlternates(paths)},
+    openGraph: {title, description, url: abs(paths[locale])},
   }
 }
 
@@ -54,27 +72,34 @@ export default async function PropertyPage({params, searchParams}: {params: Para
   const title = loc(p.title, locale)
   const body = (p.description?.[locale]?.length ? p.description[locale] : p.description?.es) as never
   const tax = settings.estimatedTaxPercent ?? 19
+  const faqs = propertyFaqs(p, locale, title)
 
-  const price =
-    type === 'vacation' && p.vacation?.nightlyRate ? `${t.from} ${formatMoney(p.vacation.nightlyRate, p.vacation.currency, locale)} ${t.perNight}`
-    : type === 'rental' && p.rental?.monthlyRent ? `${formatMoney(p.rental.monthlyRent, p.rental.currency, locale)} ${t.perMonth}`
-    : type === 'sale' && p.sale?.askingPrice ? formatMoney(p.sale.askingPrice, p.sale.currency, locale)
-    : ''
+  const mobilePrice =
+    type === 'vacation' && p.vacation?.nightlyRate ? <>{t.from} <Price amount={p.vacation.nightlyRate} currency={p.vacation.currency} /> {t.perNight}</>
+    : type === 'rental' && p.rental?.monthlyRent ? <><Price amount={p.rental.monthlyRent} currency={p.rental.currency} /> {t.perMonth}</>
+    : type === 'sale' && p.sale?.askingPrice ? <Price amount={p.sale.askingPrice} currency={p.sale.currency} />
+    : null
 
   const grouped = new Map<string, NonNullable<PropertyDetail['amenities']>>()
   for (const a of p.amenities ?? []) grouped.set(a.category, [...(grouped.get(a.category) ?? []), a])
 
   const approx = p.location && !p.showExactPin ? {lat: Math.round(p.location.lat * 100) / 100, lng: Math.round(p.location.lng * 100) / 100} : p.location
+  const crumbs = [
+    {name: settings.siteName ?? 'Home', path: `/${locale}`},
+    {name: loc(sec?.navLabel, locale), path: sectionPath(locale, type)},
+    {name: title, path: propertyPath(locale, type, slug)},
+  ]
 
   return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd(p, locale, title))}} />
+    <div className="wrap">
+      {!p.isSample && <JsonLd data={[propertyLd(p, locale, title), breadcrumbLd(crumbs), faqLd(faqs)].filter(Boolean)} />}
       <nav className="crumbs" aria-label="Breadcrumb">
-        <Link href={`/${locale}`}>A Toda Madre</Link> / <Link href={sectionPath(locale, type)}>{loc(sec?.navLabel, locale)}</Link> / <span aria-current="page">{title}</span>
+        <Link href={crumbs[0].path}>{crumbs[0].name}</Link> / <Link href={crumbs[1].path}>{crumbs[1].name}</Link> / <span aria-current="page">{title}</span>
       </nav>
       <div className="detail" data-type={type}>
         <article>
           {p.gallery?.length ? <Gallery photos={p.gallery} locale={locale} title={title} /> : null}
+          {p.tour?.scenes?.length ? <TourLauncher tour={p.tour} locale={locale} title={title} bookLabel={t.cta[type]} /> : null}
           <h1>{title}</h1>
           <div className="facts">
             {p.isSample && <span className="badge dark">{t.sample}</span>}
@@ -112,9 +137,9 @@ export default async function PropertyPage({params, searchParams}: {params: Para
               <dl className="lines" style={{maxWidth: 480}}>
                 {p.sale.ownership && p.sale.ownership !== 'other' ? <div><dt>{locale === 'es' ? 'Titularidad' : 'Title'}</dt><dd>{t[p.sale.ownership]}</dd></div> : null}
                 {p.sale.yearBuilt ? <div><dt>{locale === 'es' ? 'Año de construcción' : 'Year built'}</dt><dd className="num">{p.sale.yearBuilt}</dd></div> : null}
-                {p.sale.annualPropertyTax ? <div><dt>Predial</dt><dd className="num">{formatMoney(p.sale.annualPropertyTax, p.sale.currency, locale)}/{locale === 'es' ? 'año' : 'yr'}</dd></div> : null}
+                {p.sale.annualPropertyTax ? <div><dt>Predial</dt><dd><Price amount={p.sale.annualPropertyTax} currency={p.sale.currency} />/{locale === 'es' ? 'año' : 'yr'}</dd></div> : null}
                 {p.sale.financing?.length ? <div><dt>{locale === 'es' ? 'Financiamiento' : 'Financing'}</dt><dd>{p.sale.financing.join(', ')}</dd></div> : null}
-                {p.sale.incomeEstimate?.monthlyRevenue ? <div><dt>{t.estYield} ({t.estimate})</dt><dd className="num">{formatMoney(p.sale.incomeEstimate.monthlyRevenue, p.sale.incomeEstimate.currency, locale)}/{locale === 'es' ? 'mes' : 'mo'}</dd></div> : null}
+                {p.sale.incomeEstimate?.monthlyRevenue ? <div><dt>{t.estYield} ({t.estimate})</dt><dd><Price amount={p.sale.incomeEstimate.monthlyRevenue} currency={p.sale.incomeEstimate.currency} />/{locale === 'es' ? 'mes' : 'mo'}</dd></div> : null}
               </dl>
             </section>
           )}
@@ -140,6 +165,8 @@ export default async function PropertyPage({params, searchParams}: {params: Para
             </section>
           ) : null}
 
+          <FaqSection faqs={faqs} title={locale === 'es' ? 'Preguntas frecuentes' : 'Frequently asked questions'} id="faq" />
+
           {approx ? (
             <section className="section" aria-labelledby="where">
               <h2 id="where">{t.where}</h2>
@@ -151,20 +178,20 @@ export default async function PropertyPage({params, searchParams}: {params: Para
 
         <aside aria-label={t.cta[type]}>
           <Suspense fallback={<div className="panel" aria-busy="true" style={{minHeight: 280}} />}>
-            <Panel p={p} locale={locale} type={type} search={searchParams} tax={tax} />
+            <Panel p={p} locale={locale} type={type} search={searchParams} tax={tax} whatsapp={settings.whatsapp} />
           </Suspense>
         </aside>
       </div>
 
       <div className="mobile-bar">
-        <span className="num"><b>{price}</b></span>
+        <span><b>{mobilePrice}</b></span>
         <a className="btn" data-type={type} href="#reserve">{t.cta[type]}</a>
       </div>
-    </>
+    </div>
   )
 }
 
-async function Panel({p, locale, type, search, tax}: {p: PropertyDetail; locale: Locale; type: 'vacation' | 'rental' | 'sale'; search: Search; tax: number}) {
+async function Panel({p, locale, type, search, tax, whatsapp}: {p: PropertyDetail; locale: Locale; type: 'vacation' | 'rental' | 'sale'; search: Search; tax: number; whatsapp?: string}) {
   const sp = await search
   const g = Number(one(sp.guests))
   return (
@@ -178,19 +205,10 @@ async function Panel({p, locale, type, search, tax}: {p: PropertyDetail; locale:
       rental={p.rental}
       sale={p.sale}
       maxGuests={p.maxGuests}
+      whatsapp={p.agent?.whatsapp ?? whatsapp}
       taxPercent={tax}
       viewingModes={p.viewing?.modes?.length ? p.viewing.modes : ['in-person', 'video']}
       initial={{in: one(sp.in), out: one(sp.out), guests: Number.isFinite(g) && g > 0 ? g : undefined}}
     />
   )
-}
-
-function jsonLd(p: PropertyDetail, locale: Locale, title: string) {
-  const image = p.gallery?.slice(0, 5).map((g) => `${assetUrl(g.id)}?w=1600&auto=format`)
-  const base = {name: title, description: loc(p.summary, locale), image, numberOfBedrooms: p.bedrooms, numberOfBathroomsTotal: p.bathrooms, floorSize: p.builtAreaM2 ? {'@type': 'QuantitativeValue', value: p.builtAreaM2, unitCode: 'MTK'} : undefined}
-  if (p.listingType === 'vacation')
-    return {'@context': 'https://schema.org', '@type': 'VacationRental', ...base, containsPlace: {'@type': 'Accommodation', occupancy: {'@type': 'QuantitativeValue', maxValue: p.maxGuests}}, address: {'@type': 'PostalAddress', addressLocality: 'Playa del Carmen', addressRegion: 'Quintana Roo', addressCountry: 'MX'}}
-  const offer = p.listingType === 'sale' ? p.sale : p.rental
-  const priceVal = p.listingType === 'sale' ? p.sale?.askingPrice : p.rental?.monthlyRent
-  return {'@context': 'https://schema.org', '@type': 'RealEstateListing', name: title, description: base.description, image, offers: priceVal ? {'@type': 'Offer', price: priceVal, priceCurrency: offer?.currency} : undefined}
 }

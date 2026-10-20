@@ -1,6 +1,6 @@
 import {localeBlock, localeString, localeText} from './objects/localized'
 import {seo} from './objects/seo'
-import {galleryImage} from './objects/media'
+import {galleryImage, tourLink, tourScene, virtualTour} from './objects/media'
 import {
   amenityEntry,
   bedEntry,
@@ -30,6 +30,9 @@ export const schemaTypes = [
   localeBlock,
   seo,
   galleryImage,
+  virtualTour,
+  tourScene,
+  tourLink,
   vacationTerms,
   rentalTerms,
   saleTerms,

@@ -5,8 +5,9 @@ import {defaultLocale, locales} from '@/i18n/config'
 export function proxy(request: NextRequest) {
   const {pathname} = request.nextUrl
   if (locales.some((l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`))) return
+  const saved = request.cookies.get('NEXT_LOCALE')?.value
   const accept = request.headers.get('accept-language')?.toLowerCase() ?? ''
-  const locale = /^\s*en|,\s*en/.test(accept) && !/^\s*es/.test(accept) ? 'en' : defaultLocale
+  const locale = saved === 'es' || saved === 'en' ? saved : /^\s*en|,\s*en/.test(accept) && !/^\s*es/.test(accept) ? 'en' : defaultLocale
   const url = request.nextUrl.clone()
   url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`
   return NextResponse.redirect(url)

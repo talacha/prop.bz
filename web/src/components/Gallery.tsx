@@ -43,6 +43,7 @@ export function Gallery({photos, locale, title}: {photos: SanityPhoto[]; locale:
         photos={photos}
         locale={locale}
         labels={carouselLabels}
+        altBase={title}
         index={index}
         onIndexChange={setIndex}
         sizes="(max-width: 960px) 100vw, 780px"
@@ -61,6 +62,7 @@ export function Gallery({photos, locale, title}: {photos: SanityPhoto[]; locale:
               photos={photos}
               locale={locale}
               labels={carouselLabels}
+              altBase={title}
               index={index}
               onIndexChange={setIndex}
               sizes="100vw"

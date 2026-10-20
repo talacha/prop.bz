@@ -5,11 +5,16 @@ import {
   PROPERTIES_QUERY,
   PROPERTY_QUERY,
   SECTIONS_NAV_QUERY,
+  TOURS_QUERY,
   SECTION_QUERY,
   SETTINGS_QUERY,
+  PAGES_QUERY,
+  PAGE_QUERY,
+  SITEMAP_QUERY,
   SLUGS_QUERY,
 } from './queries'
 import type {ListingType} from '@/i18n/config'
+import type {Localized} from './image'
 import type {PropertyCardData, PropertyDetail, SectionPage, SiteSettings} from './types'
 
 // All reads are cached and tagged "sanity"; the /api/revalidate webhook invalidates the tag on publish.
@@ -22,6 +27,7 @@ export type PropertyFilters = {
   remote?: boolean
   maxBeachKm?: number
   propertyType?: string
+  tour?: boolean
 }
 
 export async function getProperties(type: ListingType, f: PropertyFilters = {}): Promise<PropertyCardData[]> {
@@ -37,6 +43,7 @@ export async function getProperties(type: ListingType, f: PropertyFilters = {}):
     remote: !!f.remote,
     maxBeachKm: f.maxBeachKm ?? null,
     propertyType: f.propertyType ?? null,
+    tour: !!f.tour,
   }) as Promise<PropertyCardData[]>
 }
 
@@ -45,6 +52,13 @@ export async function getFeatured(type: ListingType): Promise<PropertyCardData[]
   cacheLife('minutes')
   cacheTag('sanity')
   return client.fetch(FEATURED_QUERY, {type}) as Promise<PropertyCardData[]>
+}
+
+export async function getTours(): Promise<PropertyCardData[]> {
+  'use cache'
+  cacheLife('minutes')
+  cacheTag('sanity')
+  return client.fetch(TOURS_QUERY) as Promise<PropertyCardData[]>
 }
 
 export async function getProperty(type: ListingType, slug: string): Promise<PropertyDetail | null> {
@@ -73,6 +87,27 @@ export async function getSettings(): Promise<SiteSettings> {
   cacheLife('hours')
   cacheTag('sanity')
   return (await client.fetch(SETTINGS_QUERY)) ?? {}
+}
+
+export async function getSitemapEntries(): Promise<{listingType: ListingType; slug: string; _updatedAt: string; images: string[]}[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag('sanity')
+  return client.fetch(SITEMAP_QUERY)
+}
+
+export async function getPage(slug: string): Promise<{_id: string; title: Localized; body?: {es?: unknown[]; en?: unknown[]}; _updatedAt: string} | null> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag('sanity')
+  return client.fetch(PAGE_QUERY, {slug})
+}
+
+export async function getPageSlugs(): Promise<{slug: string; _updatedAt: string}[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag('sanity')
+  return client.fetch(PAGES_QUERY)
 }
 
 export async function getSlugs(): Promise<{listingType: ListingType; slug: string; _updatedAt: string}[]> {

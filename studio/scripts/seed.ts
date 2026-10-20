@@ -176,7 +176,7 @@ async function main() {
     })
 
   docs.push({
-    _id: 'siteSettings', _type: 'siteSettings', siteName: 'A Toda Madre', tagline: ls('Playa del Carmen. Reserva directo.', 'Playa del Carmen. Book direct.'),
+    _id: 'siteSettings', _type: 'siteSettings', siteName: 'Property Business SaaS Demo', tagline: ls('Playa del Carmen. Reserva directo.', 'Playa del Carmen. Book direct.'),
     defaultCurrency: 'USD', estimatedTaxPercent: 19,
     trustPoints: [ls('Sin cuota de servicio', 'No service fee'), ls('Precio total con impuestos', 'Total price with taxes'), ls('Cancelación flexible', 'Flexible cancellation')],
   })

@@ -1,4 +1,4 @@
-# A Toda Madre Direct — Plan
+# Property Business SaaS Demo — Plan
 
 Goal: a direct-booking platform for the A Toda Madre Properties portfolio in Playa del Carmen that lets guests book and pay directly, with no marketplace fees or account friction, backed by a complete API. The operator is a Mexican legal entity, payments run on Stripe, and no third-party marketplace is integrated.
 
@@ -13,6 +13,11 @@ Goal: a direct-booking platform for the A Toda Madre Properties portfolio in Pla
 | [05-frontend.md](./05-frontend.md) | IA, screens, design system, a11y, SEO |
 | [06-security-audit.md](./06-security-audit.md) | Passive audit of the old site and threat model of the new one |
 | [07-mexico-entity-and-stripe.md](./07-mexico-entity-and-stripe.md) | Mexican entity, Stripe Mexico, IVA/ISH, CFDI, compliance assumptions |
+| [08-sanity-content-model.md](./08-sanity-content-model.md) | Sanity schema, persona navigation, the running Next.js site, seed content |
+| [09-seo-geo-performance.md](./09-seo-geo-performance.md) | SEO, GEO (AI search and local), Lighthouse results, what is done and what needs the owner |
+| [10-design-system.md](./10-design-system.md) | Competitor benchmark, redesign decisions, preferences menu |
+| [11-go-live-status.md](./11-go-live-status.md) | What is done, what is held for the demo, what needs the owner |
+| [../README.md](../README.md) | Repo layout and how to run the Studio and the site |
 | [../frontend/prototype/index.html](../frontend/prototype/index.html) | Interactive prototype (published as an Artifact) |
 
 ## Summary of the legacy site
@@ -26,6 +31,18 @@ Drupal 11 on shared hosting: a 6-property catalog with one filter, a flat nightl
 - Booking takes about 6 interactions instead of about 17–27 (see UX doc), 2 from a shared deep link.
 - Airbnb and similar platforms are competitors and UX benchmarks only; nothing in the system integrates with them.
 
+## Three property types
+
+The site has three top-level sections, each with its own cards, filters and primary action. Content for all three lives in one Sanity `property` type (see doc 08).
+
+| Section | What it is | Primary action | Typical personas |
+|---|---|---|---|
+| Stays (`vacation`) | Days or weeks | Reserve: dates, guests, total estimate, pay | Families, couples, groups, beach first, remote workers, pets |
+| Rentals (`rental`) | Leases of 1 to 11 months | Book a tour, or start an application | Relocating professionals, remote workers, families, pets |
+| For sale (`sale`) | Purchase | Book a viewing, in person or by video | Investors, second home and retirement, first home, families |
+
+Design goal for all three: the fewest steps from landing on the site to a confirmed stay, a booked tour or a booked viewing. Step counts are tracked in the UX doc and in analytics; they are not shown to visitors.
+
 ## Key decisions
 
 | Decision | Choice | Why |
@@ -35,7 +52,8 @@ Drupal 11 on shared hosting: a 6-property catalog with one filter, a flat nightl
 | Pricing | Server-signed quotes | Shown price equals charged price; prevents tampering |
 | Payments | Stripe Mexico direct charges (cards + MSI, wallets, OXXO, SPEI); Connect deferred | Low PCI scope; single Mexican entity |
 | Auth | Guest passwordless OTP; host/staff passkeys | No password database for guests; strong auth where it matters |
-| Front end | Next.js, one-page checkout, guest checkout | Fewest clicks, SEO, speed |
+| Front end | Next.js 16, Sanity for content, one-page checkout, guest checkout | Fewest clicks, SEO, speed |
+| Content | Sanity (listings, copy, taxonomy) vs Postgres (transactions) | Editors manage content; bookings stay consistent |
 | Calendar | Single source of truth in our DB, optional read-only `.ics` export | No external sync needed; removes a class of bugs and SSRF risk |
 
 ## Roadmap

@@ -27,7 +27,7 @@ export function Filters({type, locale}: {type: ListingType; locale: Locale}) {
     start(() => router.replace(`${pathname}${next.size ? `?${next}` : ''}`, {scroll: false}))
   }
   const val = (k: string) => sp.get(k) ?? ''
-  const has = ['in', 'out', 'guests', 'beds', 'max', 'pets', 'remote', 'beach', 'lease', 'movein', 'ptype', 'persona'].some((k) => sp.has(k))
+  const has = ['in', 'out', 'guests', 'beds', 'max', 'pets', 'remote', 'beach', 'lease', 'movein', 'ptype', 'persona', 'tour'].some((k) => sp.has(k))
   const today = new Date().toISOString().slice(0, 10)
 
   return (
@@ -85,6 +85,9 @@ export function Filters({type, locale}: {type: ListingType; locale: Locale}) {
             </label>
             <label className="field">{t.maxPrice} (MXN)<input type="number" inputMode="numeric" step={100000} min={0} value={val('max')} onChange={(e) => set('max', e.target.value)} placeholder="8000000" /></label>
           </>
+        )}
+        {type === 'sale' && (
+          <label className="check"><input type="checkbox" checked={sp.get('tour') === '1'} onChange={(e) => set('tour', e.target.checked ? '1' : null)} />{t.withTour}</label>
         )}
         {type !== 'sale' && (
           <label className="check"><input type="checkbox" checked={sp.get('pets') === '1'} onChange={(e) => set('pets', e.target.checked ? '1' : null)} />{t.petFriendly}</label>

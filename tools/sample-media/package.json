@@ -1,0 +1,8 @@
+{
+  "name": "sample-media",
+  "private": true,
+  "type": "module",
+  "description": "Renders illustrative sample photos and 360° panoramas for the demo sale listings (three.js in headless Chrome).",
+  "scripts": {"render": "node render.mjs"},
+  "dependencies": {"playwright-core": "^1.50.0", "three": "^0.170.0"}
+}

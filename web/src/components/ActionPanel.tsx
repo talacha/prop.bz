@@ -1,8 +1,10 @@
 'use client'
 
-import {useEffect, useMemo, useState} from 'react'
+import Link from 'next/link'
+import {useMemo, useState, useSyncExternalStore} from 'react'
 import type {Locale, ListingType} from '@/i18n/config'
-import {formatMoney, getDictionary} from '@/i18n/dictionary'
+import {getDictionary} from '@/i18n/dictionary'
+import {useMoney} from './PrefsProvider'
 import {estimateStay, nightsBetween} from '@/lib/pricing'
 import type {RequestPayload} from '@/lib/requests'
 import type {RentalTerms, SaleTerms, VacationTerms} from '@/sanity/types'
@@ -20,8 +22,21 @@ type Props = Common & {
   rental?: RentalTerms
   sale?: SaleTerms
   maxGuests?: number
+  whatsapp?: string
   taxPercent: number
   initial: {in?: string; out?: string; guests?: number}
+}
+
+const subscribeNever = () => () => {}
+function nextDaysClient(): string {
+  const out: string[] = []
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  while (out.length < 7) {
+    out.push(d.toISOString().slice(0, 10))
+    d.setDate(d.getDate() + 1)
+  }
+  return out.join(',')
 }
 
 const TIMES = ['10:00', '11:00', '12:00', '13:00', '16:00', '17:00']
@@ -30,6 +45,7 @@ const TIMES = ['10:00', '11:00', '12:00', '13:00', '16:00', '17:00']
 export function ActionPanel(props: Props) {
   const {type, locale} = props
   const t = getDictionary(locale)
+  const money = useMoney()
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'demo' | 'error'>('idle')
   const [errors, setErrors] = useState<string[]>([])
   const [contact, setContact] = useState({name: '', email: '', phone: '', message: '', website: ''})
@@ -39,26 +55,17 @@ export function ActionPanel(props: Props) {
   const [checkOut, setCheckOut] = useState(props.initial.out ?? '')
   const [guests, setGuests] = useState(props.initial.guests ?? 2)
   // tour / viewing
-  const [days, setDays] = useState<string[]>([])
-  const [date, setDate] = useState('')
+  // The next 7 days exist only on the client (empty during server render), so the page stays cacheable and hydration-safe.
+  const daysKey = useSyncExternalStore(subscribeNever, nextDaysClient, () => '')
+  const days = useMemo(() => (daysKey ? daysKey.split(',') : []), [daysKey])
+  const [picked, setPicked] = useState('')
+  const date = picked || days[0] || ''
+  const setDate = setPicked
   const [time, setTime] = useState('')
   const [mode, setMode] = useState<'in-person' | 'video'>('in-person')
   // application
   const [lease, setLease] = useState(props.rental?.minLeaseMonths ?? 6)
   const [moveIn, setMoveIn] = useState(props.rental?.availableFrom ?? '')
-
-  useEffect(() => {
-    // Days are generated on the client so the page itself stays cacheable.
-    const out: string[] = []
-    const d = new Date()
-    d.setDate(d.getDate() + 1)
-    while (out.length < 7) {
-      out.push(d.toISOString().slice(0, 10))
-      d.setDate(d.getDate() + 1)
-    }
-    setDays(out)
-    setDate(out[0])
-  }, [])
 
   const nights = nightsBetween(checkIn, checkOut)
   const v = props.vacation
@@ -116,11 +123,17 @@ export function ActionPanel(props: Props) {
     </>
   )
   const errorLine = <p className="err" role="alert">{state === 'error' ? t.error : ''}</p>
+  const fine = (
+    <>
+      <p className="note">{t.consentA} <Link href={`/${locale}/info/privacy`}>{t.consentLink}</Link>. {t.demoUpfront}</p>
+      {props.whatsapp ? <a className="btn ghost" href={`https://wa.me/${props.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(t.whatsappText(props.title))}`} target="_blank" rel="noopener noreferrer">{t.whatsapp}</a> : null}
+    </>
+  )
 
   if (type === 'vacation' && v) {
     return (
       <form className="panel" id="reserve" onSubmit={(e) => submit(e, 'booking')} noValidate>
-        <div className="price"><span className="muted">{t.from}</span> <b className="num">{formatMoney(v.nightlyRate ?? 0, v.currency, locale)}</b> <span className="muted">{t.perNight}</span></div>
+        <div className="price"><span className="muted">{t.from}</span> <b className="num">{money(v.nightlyRate ?? 0, v.currency)}</b> <span className="muted">{t.perNight}</span></div>
         <div className="two">
           <label className="field">{t.checkIn}<input type="date" value={checkIn} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setCheckIn(e.target.value)} required aria-invalid={bad('checkIn')} /></label>
           <label className="field">{t.checkOut}<input type="date" value={checkOut} min={checkIn} onChange={(e) => setCheckOut(e.target.value)} required aria-invalid={bad('checkOut')} /></label>
@@ -132,18 +145,19 @@ export function ActionPanel(props: Props) {
         </label>
         {est && v ? (
           <dl className="lines" aria-live="polite">
-            <div><dt>{formatMoney(v.nightlyRate ?? 0, v.currency, locale)} × {t.nights(nights)}</dt><dd className="num">{formatMoney(est.accommodation, v.currency, locale)}</dd></div>
-            {est.cleaning > 0 && <div><dt>{t.cleaning}</dt><dd className="num">{formatMoney(est.cleaning, v.currency, locale)}</dd></div>}
+            <div><dt>{money(v.nightlyRate ?? 0, v.currency)} × {t.nights(nights)}</dt><dd className="num">{money(est.accommodation, v.currency)}</dd></div>
+            {est.cleaning > 0 && <div><dt>{t.cleaning}</dt><dd className="num">{money(est.cleaning, v.currency)}</dd></div>}
             <div><dt>{t.serviceFee}</dt><dd className="num">{t.free}</dd></div>
-            <div><dt>{t.taxes}</dt><dd className="num">{formatMoney(est.taxes, v.currency, locale)}</dd></div>
-            <div className="total"><dt>{t.estTotal}</dt><dd className="num">{formatMoney(est.total, v.currency, locale)}</dd></div>
+            <div><dt>{t.taxes}</dt><dd className="num">{money(est.taxes, v.currency)}</dd></div>
+            <div className="total"><dt>{t.estTotal}</dt><dd className="num">{money(est.total, v.currency)}</dd></div>
           </dl>
         ) : null}
         {v.minNights && nights > 0 && !minNightsOk ? <p className="err" role="alert">{locale === 'es' ? `Estancia mínima: ${v.minNights} noches.` : `Minimum stay: ${v.minNights} nights.`}</p> : null}
         {contactFields}
         {errorLine}
-        <button className="btn" data-type="vacation" disabled={state === 'sending' || !nights || !minNightsOk}>{t.reserve}{est && v ? ` · ${formatMoney(est.total, v.currency, locale)}` : ''}</button>
+        <button className="btn" data-type="vacation" disabled={state === 'sending' || !nights || !minNightsOk}>{t.reserve}{est && v ? ` · ${money(est.total, v.currency)}` : ''}</button>
         <p className="note">{t.estNote}</p>
+        {fine}
       </form>
     )
   }
@@ -157,7 +171,7 @@ export function ActionPanel(props: Props) {
     <form className="panel" id="reserve" onSubmit={(e) => submit(e, kind)} noValidate>
       {r && (
         <>
-          <div className="price"><b className="num">{formatMoney(r.monthlyRent ?? 0, r.currency, locale)}</b> <span className="muted">{t.perMonth}</span></div>
+          <div className="price"><b className="num">{money(r.monthlyRent ?? 0, r.currency)}</b> <span className="muted">{t.perMonth}</span></div>
           <dl className="lines">
             {r.depositMonths !== undefined && <div><dt>{t.deposit}</dt><dd className="num">{t.months(r.depositMonths)}</dd></div>}
             {r.minLeaseMonths && r.maxLeaseMonths && <div><dt>{t.leaseMonths}</dt><dd>{r.minLeaseMonths}–{r.maxLeaseMonths}</dd></div>}
@@ -167,9 +181,9 @@ export function ActionPanel(props: Props) {
       )}
       {s && (
         <>
-          <div className="price"><b className="num">{formatMoney(s.askingPrice ?? 0, s.currency, locale)}</b></div>
+          <div className="price"><b className="num">{money(s.askingPrice ?? 0, s.currency)}</b></div>
           <dl className="lines">
-            {s.monthlyMaintenanceFee ? <div><dt>{t.maintenance}</dt><dd className="num">{formatMoney(s.monthlyMaintenanceFee, s.currency, locale)}</dd></div> : null}
+            {s.monthlyMaintenanceFee ? <div><dt>{t.maintenance}</dt><dd className="num">{money(s.monthlyMaintenanceFee, s.currency)}</dd></div> : null}
             {s.ownership && s.ownership !== 'other' ? <div><dt>{locale === 'es' ? 'Titularidad' : 'Title'}</dt><dd>{t[s.ownership]}</dd></div> : null}
           </dl>
         </>
@@ -211,6 +225,7 @@ export function ActionPanel(props: Props) {
           </div>
         </details>
       )}
+      {fine}
     </form>
   )
 }

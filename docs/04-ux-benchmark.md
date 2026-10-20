@@ -72,3 +72,35 @@ Counting rule: one click/tap = one discrete interaction; typing counts as zero i
 
 ### Measurement
 Instrument funnel events (`dates_selected`, `quote_shown`, `reserve_clicked`, `checkout_viewed`, `payment_submitted`, `booking_confirmed`) with a privacy-friendly analytics tool. Targets: median ≤ 6 interactions, listing→paid conversion ≥ 3%, checkout abandonment ≤ 35%, time-to-book ≤ 90 s for deep-link traffic. Run a moderated test with 5 users before launch and an A/B on one-page vs two-step checkout after.
+
+## 3. Journeys beyond vacation stays
+
+The click budget above is for vacation stays. Rentals and sales have a different conversion event: a tour or viewing request instead of a payment. Each is a single panel, with no account and no multi-step wizard.
+
+| Journey | Path | Interactions |
+|---|---|---|
+| Book a tour (rental), from a persona shortcut | persona chip, property card, day, time, Book a tour (contact fields autofill) | 5 |
+| Book a viewing (sale), from a tab | tab, card, day, time, Book a viewing | 5 |
+| Tour or viewing from a shared link (`/en/rentals/slug`) | day, time, send | 3 |
+| Start a rental application | open "Start application", send | 2 after the tour panel is visible |
+
+Shortcuts that make these short: the tab and persona chips replace searching; every card shows the type-specific facts that decide interest (lease window and move-in date, price per m² and title type, investor estimate), so people open fewer listings; a time picker with the next 7 days and fixed slots; contact fields use autofill attributes; video viewing as an option for buyers abroad.
+
+The click counter in the first prototype was a design aid and has been removed; step counts are measured with funnel events instead.
+
+## 4. Personas and navigation
+
+Top level: **Stays | Rentals | For sale**, a language switch, and "Find your place" (persona shortcuts grouped by section; on phones the chips sit under each section title instead). Each persona is content in Sanity: a title, tagline, the sections it applies to and a filter preset.
+
+| Persona | Section(s) | Preset |
+|---|---|---|
+| Families | all | 2+ bedrooms, audience families |
+| Couples | stays | audience couples |
+| Groups of friends | stays | 6+ guests |
+| Beach first | stays, sale | within 500 m of the sea |
+| Remote workers | stays, rentals | measured wifi 50 Mbps or more |
+| With pets | stays, rentals | pets allowed |
+| Relocating professionals | rentals | furnished, short lease |
+| Investors | sale | has an income estimate |
+| Second home and retirement | sale | audience second-home |
+| First home | sale | audience first-home |

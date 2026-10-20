@@ -1,4 +1,4 @@
-<title>A Toda Madre Direct</title>
+<title>Property Business SaaS Demo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
@@ -73,8 +73,8 @@ h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-he
 .shead p { color: var(--muted); max-width: 60ch; margin: 8px 0 0; }
 .filters { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 12px; margin-block: 14px; }
 .fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end; }
-.field { display: grid; gap: 4px; font-size: .74rem; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
-.field input, .field select { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; min-height: 44px; text-transform: none; letter-spacing: 0; font-size: 1rem; width: 100%; }
+.field { min-width: 0; display: grid; gap: 4px; font-size: .74rem; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+.field input, .field select { min-width: 0; max-width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; min-height: 44px; text-transform: none; letter-spacing: 0; font-size: 1rem; width: 100%; }
 .check { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: .95rem; }
 .check input { width: 20px; height: 20px; accent-color: var(--accent); }
 .rhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-block: 18px 10px; flex-wrap: wrap; }
@@ -141,7 +141,7 @@ dialog.lb::backdrop { background: #050f16; }
 .lbi { height: 100%; display: grid; grid-template-rows: auto 1fr; gap: 8px; padding: max(12px, env(safe-area-inset-top, 0px)) 12px 12px; }
 .lbi .gallery { height: 100%; grid-template-rows: 1fr; } .lbi .carousel { height: 100%; } .lbi .track, .lbi .slide { height: 100%; aspect-ratio: auto; }
 .lbbar { display: flex; justify-content: space-between; align-items: center; } .lbclose { border: 1px solid rgba(255,255,255,.4); background: transparent; color: #fff; border-radius: 999px; padding: 8px 16px; min-height: 44px; font-weight: 600; }
-@media (max-width: 720px) { .nbtn { width: 44px; height: 44px; } .thumbs, .hint.kb { display: none; } .persona-row { grid-template-columns: 1fr; } .persona-row strong { padding-top: 0; } }
+@media (max-width: 720px) { .top-row { gap: 8px; padding-block: 8px; } .brand { margin-right: auto; font-size: 1.05rem; text-align: left; line-height: 1.15; flex: 1 1 0; min-width: 0; } .menu { display: none; } #langBtn { order: 2; } .tabs { order: 3; width: 100%; } .tab { flex: 1; padding: 10px 6px; } .menu-panel { right: auto; left: 0; } .nbtn { width: 44px; height: 44px; } .thumbs, .hint.kb { display: none; } .persona-row { grid-template-columns: 1fr; } .persona-row strong { padding-top: 0; } }
 @media (prefers-reduced-motion: no-preference) { .sheet { animation: slide .22s ease-out; } @keyframes slide { from { transform: translateX(24px); opacity: 0; } } }
 @media (prefers-reduced-motion: reduce) { .track { scroll-behavior: auto !important; } }
 </style>
@@ -149,7 +149,7 @@ dialog.lb::backdrop { background: #050f16; }
 <div class="wrap">
   <header class="top">
     <div class="top-row">
-      <button class="brand" type="button" id="home">A Toda Madre <span>Direct</span></button>
+      <button class="brand" type="button" id="home">Property Business <span>SaaS Demo</span></button>
       <nav class="tabs" aria-label="Property type" id="tabs"></nav>
       <div class="menu">
         <button class="pill" type="button" id="menuBtn" aria-expanded="false" aria-controls="menuPanel"></button>
@@ -264,7 +264,7 @@ dialog.lb::backdrop { background: #050f16; }
   /* ---- carousel ---- */
   function carousel(host, ph, opts) {
     opts = opts || {};
-    var n = ph.length, idx = opts.start || 0, prog = false, raf = 0;
+    var n = ph.length, idx = opts.start || 0, prog = false, raf = 0, tgt = 0, tm = 0;
     host.innerHTML = '<div class="gallery"><div class="carousel" role="region" aria-roledescription="carousel" tabindex="0" aria-label="' + esc(opts.label) + '" data-fit="' + (opts.fit || "cover") + '">' +
       '<div class="track">' + ph.map(function (s, i) { return '<div class="slide" role="group" aria-roledescription="slide" aria-label="' + esc(t().photoOf(i + 1, n)) + '"><img src="' + s.src + '" alt="' + esc(s.alt) + '"' + (i > 1 ? ' loading="lazy"' : "") + "></div>"; }).join("") + "</div>" +
       '<button type="button" class="nbtn p" aria-label="' + esc(t().prev) + '"><span aria-hidden="true">‹</span></button><button type="button" class="nbtn n" aria-label="' + esc(t().next) + '"><span aria-hidden="true">›</span></button>' +
@@ -280,9 +280,10 @@ dialog.lb::backdrop { background: #050f16; }
     }
     function go(i, smooth) {
       i = Math.max(0, Math.min(n - 1, i)); var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      prog = true; track.scrollTo({ left: i * track.clientWidth, behavior: smooth === false || reduce ? "auto" : "smooth" }); idx = i; paint(); setTimeout(function () { prog = false; }, 450);
+      prog = true; tgt = i; track.scrollTo({ left: i * track.clientWidth, behavior: smooth === false || reduce ? "auto" : "smooth" }); idx = i; paint(); clearTimeout(tm); tm = setTimeout(function () { prog = false; }, 2000);
     }
-    track.addEventListener("scroll", function () { if (prog) return; cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var i = Math.round(track.scrollLeft / track.clientWidth); if (i !== idx) { idx = i; paint(); } }); });
+    track.addEventListener("touchstart", function () { prog = false; }); track.addEventListener("wheel", function () { prog = false; });
+    track.addEventListener("scroll", function () { if (prog) { if (Math.abs(track.scrollLeft - tgt * track.clientWidth) < 2) prog = false; return; } cancelAnimationFrame(raf); raf = requestAnimationFrame(function () { var i = Math.round(track.scrollLeft / track.clientWidth); if (i !== idx) { idx = i; paint(); } }); });
     prev.addEventListener("click", function () { go(idx - 1); }); next.addEventListener("click", function () { go(idx + 1); });
     root.addEventListener("keydown", function (e) {
       if (e.target !== root) return;

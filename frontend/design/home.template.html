@@ -1,0 +1,308 @@
+<title>Property Business SaaS Demo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Concept: a photo-first coastal front door. One hero photograph, one finder card that works for all three ways to use a property
+   (stay, rent, buy), then image-led rails. Teal is the brand; each property type keeps its own accent (teal, indigo, amber).
+   The yellow star badge from the favicon is the only warm highlight. No extra fonts, no libraries, CSS-only motion. */
+:root {
+  --bg: #f4f7f6; --surface: #ffffff; --ink: #0c2230; --muted: #53697a; --line: #d8e1e1;
+  --accent: #0b6e66; --accent-ink: #ffffff; --accent-soft: #dff1ee;
+  --rent: #3f4fb0; --rent-soft: #e4e7f8; --sale: #8a4b12; --sale-soft: #f7e8d6;
+  --sun: #f5b82e; --sun-ink: #3a2a00; --deep: #071a24; --on-deep: #e8f1f1;
+  --shadow-1: 0 1px 2px rgba(12,34,48,.06), 0 8px 24px rgba(12,34,48,.07);
+  --shadow-2: 0 2px 4px rgba(12,34,48,.08), 0 24px 56px rgba(12,34,48,.16);
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r: 20px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #09171f; --surface: #10252f; --ink: #e8f1f1; --muted: #98afb8; --line: #223f4c;
+    --accent: #3cc2b4; --accent-ink: #04201d; --accent-soft: #123a38; --rent: #a9b4ff; --rent-soft: #1d2447; --sale: #f0b97a; --sale-soft: #3a2a14;
+    --deep: #050f16; --shadow-1: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3); --shadow-2: 0 2px 4px rgba(0,0,0,.5), 0 24px 56px rgba(0,0,0,.5); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #09171f; --surface: #10252f; --ink: #e8f1f1; --muted: #98afb8; --line: #223f4c;
+  --accent: #3cc2b4; --accent-ink: #04201d; --accent-soft: #123a38; --rent: #a9b4ff; --rent-soft: #1d2447; --sale: #f0b97a; --sale-soft: #3a2a14;
+  --deep: #050f16; --shadow-1: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3); --shadow-2: 0 2px 4px rgba(0,0,0,.5), 0 24px 56px rgba(0,0,0,.5); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 17px/1.55 var(--body); margin: 0; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); padding-block: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.04; letter-spacing: -.02em; }
+.wrap { max-width: 1200px; margin-inline: auto; }
+.bleed { margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); }
+.num { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+/* header */
+.top { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(14px); border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); padding-inline: max(16px, env(safe-area-inset-left, 0px)); margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); }
+.top-row { display: flex; align-items: center; gap: 14px; padding-block: 10px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 1.12rem; letter-spacing: -.02em; text-decoration: none; margin-right: auto; }
+.star { width: 30px; height: 30px; flex: none; }
+.brand b { color: var(--accent); font-weight: 800; }
+.nav { display: flex; gap: 2px; }
+.nav a { text-decoration: none; padding: 9px 14px; border-radius: 999px; font-weight: 600; font-size: .95rem; }
+.nav a:hover { background: var(--accent-soft); }
+.nav a[aria-current] { background: var(--ink); color: var(--bg); }
+.icon-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+.icon-btn:hover { border-color: var(--ink); }
+@media (max-width: 720px) { .nav { display: none; } .brand span { font-size: 1rem; } }
+
+/* hero */
+.hero { position: relative; isolation: isolate; color: #fff; min-height: clamp(560px, 82vh, 760px); display: grid; align-items: end; padding: 0 max(16px, env(safe-area-inset-left, 0px)) 110px; }
+.hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(5,17,24,.86) 0%, rgba(5,17,24,.5) 52%, rgba(5,17,24,.08) 100%), linear-gradient(0deg, rgba(5,17,24,.7), rgba(5,17,24,0) 45%); }
+.hero-in { width: 100%; max-width: 1200px; margin-inline: auto; padding-top: 120px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: #cfe7e3; }
+.eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--sun); }
+.hero h1 { font-weight: 800; font-size: clamp(2.6rem, 7vw, 5.4rem); max-width: 13ch; margin-top: 16px; letter-spacing: -.035em; }
+.hero h1 em { font-style: normal; color: var(--sun); }
+.hero p { max-width: 46ch; margin: 18px 0 0; font-size: clamp(1.05rem, 1.6vw, 1.25rem); color: #dcebea; }
+
+/* finder */
+.finder-wrap { max-width: 1200px; margin: -72px auto 0; position: relative; z-index: 5; }
+.finder { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; box-shadow: var(--shadow-2); padding: 12px; max-width: 980px; }
+.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 5px; background: var(--bg); border-radius: 999px; }
+.tab { border: 0; background: transparent; border-radius: 999px; padding: 12px 10px; min-height: 48px; font-weight: 700; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.tab:hover { background: var(--accent-soft); }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent); }
+.tab[data-t="rent"][aria-selected="true"] { background: var(--rent); color: #fff; box-shadow: 0 6px 18px color-mix(in srgb, var(--rent) 40%, transparent); }
+.tab[data-t="buy"][aria-selected="true"] { background: var(--sale); color: #fff; box-shadow: 0 6px 18px color-mix(in srgb, var(--sale) 40%, transparent); }
+.fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 8px; align-items: end; padding: 12px 6px 6px; }
+.fld { display: grid; gap: 4px; font-size: .72rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-weight: 600; min-width: 0; }
+.fld input, .fld select { border: 1px solid var(--line); background: var(--bg); border-radius: 14px; padding: 12px 14px; min-height: 52px; font-size: 1rem; text-transform: none; letter-spacing: 0; color: var(--ink); font-weight: 500; width: 100%; min-width: 0; }
+.go { border: 0; border-radius: 14px; min-height: 52px; padding: 0 28px; font-weight: 800; font-size: 1rem; background: var(--accent); color: var(--accent-ink); }
+.go[data-t="rent"] { background: var(--rent); color: #fff; } .go[data-t="buy"] { background: var(--sale); color: #fff; }
+.quick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 6px 4px; font-size: .9rem; color: var(--muted); }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; font-weight: 600; font-size: .9rem; text-decoration: none; color: var(--ink); }
+.chip:hover { border-color: var(--ink); }
+@media (max-width: 860px) { .fields { grid-template-columns: 1fr 1fr; } .go { grid-column: 1 / -1; } .hero { min-height: 430px; padding-bottom: 92px; } .hero-in { padding-top: 40px; } .hero h1 { font-size: clamp(2.3rem, 11vw, 3.2rem); } }
+@media (max-width: 460px) { .tab { font-size: .92rem; padding-inline: 4px; } .fld input, .fld select { padding-inline: 10px; font-size: .95rem; } }
+
+/* trust */
+.trust { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding-block: 44px 8px; }
+.trust div { display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: center; }
+.trust svg { width: 44px; height: 44px; padding: 10px; border-radius: 14px; background: var(--accent-soft); color: var(--accent); }
+.trust b { display: block; font-size: 1rem; line-height: 1.25; }
+.trust span { color: var(--muted); font-size: .88rem; line-height: 1.3; display: block; }
+@media (max-width: 860px) { .trust { grid-template-columns: 1fr 1fr; } } @media (max-width: 460px) { .trust { grid-template-columns: 1fr; } }
+
+/* sections */
+.sec { padding-block: 52px 8px; }
+.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.sec-head h2 { font-size: clamp(1.75rem, 3.6vw, 2.6rem); font-weight: 800; }
+.sec-head p { margin: 8px 0 0; color: var(--muted); max-width: 52ch; }
+.more { font-weight: 700; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; padding: 10px 4px; }
+.more:hover { text-decoration: underline; text-underline-offset: 4px; }
+.rail { display: grid; gap: 18px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) { .rail { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: min(80%, 340px); overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); padding-bottom: 14px; scrollbar-width: none; } .rail > * { scroll-snap-align: start; } .rail::-webkit-scrollbar { display: none; } }
+
+/* cards */
+.card { display: block; text-decoration: none; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow-1); transition: transform .25s ease, box-shadow .25s ease; }
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); }
+.card .ph { aspect-ratio: 4 / 3; position: relative; overflow: hidden; background: var(--accent-soft); }
+.card .ph img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+.card:hover .ph img { transform: scale(1.045); }
+.ph.ind { background: linear-gradient(150deg, #5563c7, #26306e); } .ph.amb { background: linear-gradient(150deg, #b9702a, #5a3010); }
+.ph .lab { position: absolute; inset: 0; display: grid; place-items: center; color: #ffffffcc; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+.badges { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+.bd { background: var(--surface); color: var(--ink); border-radius: 999px; padding: 4px 11px; font-size: .75rem; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+.bd.sun { background: var(--sun); color: var(--sun-ink); } .bd.dk { background: var(--deep); color: #fff; }
+.cbody { padding: 16px 18px 18px; display: grid; gap: 5px; }
+.cbody h3 { font-size: 1.28rem; font-weight: 700; letter-spacing: -.015em; }
+.meta { color: var(--muted); font-size: .92rem; }
+.price { display: flex; align-items: baseline; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.price b { font-family: var(--display); font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; }
+.good { color: var(--accent); font-weight: 700; font-size: .85rem; } .rtag { color: var(--rent); font-weight: 700; font-size: .85rem; }
+.est { background: var(--sale-soft); color: var(--sale); border-radius: 12px; padding: 7px 11px; font-size: .86rem; font-weight: 600; }
+
+/* tours */
+.tour-band { background: var(--deep); color: var(--on-deep); margin-top: 60px; padding: 56px max(16px, env(safe-area-inset-left, 0px)) 52px; position: relative; overflow: hidden; }
+.tour-band::before { content: ""; position: absolute; inset: auto -10% -60% auto; width: 60vw; height: 60vw; background: radial-gradient(closest-side, rgba(60,194,180,.18), transparent); }
+.tour-band h2 { color: #fff; font-size: clamp(1.9rem, 4vw, 3rem); font-weight: 800; max-width: 16ch; }
+.tour-band .sec-head p { color: #a9c3c9; }
+.tour-band .more { color: #fff; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; position: relative; }
+@media (max-width: 760px) { .tiles { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: min(86%, 380px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); } .tiles::-webkit-scrollbar { display: none; } .tile { scroll-snap-align: start; } }
+.tile { position: relative; display: block; border-radius: 24px; overflow: hidden; aspect-ratio: 16 / 10; text-decoration: none; color: #fff; isolation: isolate; box-shadow: 0 24px 56px rgba(0,0,0,.35); }
+.tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform .8s ease; }
+.tile:hover img { transform: scale(1.05); }
+.tile::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(5,15,22,.88), rgba(5,15,22,.05) 62%); }
+.tile .play { position: absolute; top: 50%; left: 50%; width: 72px; height: 72px; transform: translate(-50%, -62%); border-radius: 999px; background: rgba(255,255,255,.94); color: #0c2230; display: grid; place-items: center; box-shadow: 0 10px 36px rgba(0,0,0,.45); }
+.tile .play svg { width: 28px; height: 28px; margin-left: 3px; }
+.tile .tb { position: absolute; left: 20px; right: 20px; bottom: 18px; display: grid; gap: 3px; }
+.tile .tb b { font-family: var(--display); font-size: 1.4rem; font-weight: 700; letter-spacing: -.015em; }
+.tile .tb span { color: #cfe3e8; font-size: .92rem; }
+.tile .deg { position: absolute; top: 16px; left: 16px; background: var(--sun); color: var(--sun-ink); font-weight: 800; padding: 4px 12px; border-radius: 999px; font-size: .85rem; }
+
+/* how it works */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; counter-reset: s; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 24px; position: relative; }
+.step::before { counter-increment: s; content: counter(s); position: absolute; top: 18px; right: 22px; font-family: var(--display); font-weight: 800; font-size: 3.4rem; line-height: 1; color: var(--accent-soft); }
+.step h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; position: relative; } .step p { margin: 0; color: var(--muted); position: relative; max-width: 32ch; }
+@media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+
+/* faq + footer */
+.faq { display: grid; gap: 8px; max-width: 800px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 0 18px; }
+.faq summary { cursor: pointer; padding: 16px 0; font-weight: 700; } .faq p { margin: 0 0 16px; color: var(--muted); max-width: 64ch; }
+footer.foot { background: var(--deep); color: #b8cdd2; margin-top: 72px; padding: 52px max(16px, env(safe-area-inset-left, 0px)) 36px; }
+.foot-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
+.foot h4 { margin: 0 0 12px; color: #fff; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; }
+.foot a { display: block; text-decoration: none; padding: 5px 0; color: #b8cdd2; } .foot a:hover { color: #fff; }
+.foot .brand { color: #fff; margin-bottom: 12px; }
+.foot small { display: block; margin-top: 30px; padding-top: 18px; border-top: 1px solid #16323f; color: #7f9aa2; }
+@media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr 1fr; } }
+.demo-note { color: var(--muted); font-size: .8rem; padding-block: 18px 0; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="#"><svg class="star" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#f5b82e"/><polygon points="32,12.5 38.2,26.6 53.5,28.2 42,38.4 45.3,53.4 32,45.6 18.7,53.4 22,38.4 10.5,28.2 25.8,26.6" fill="#3a2a00" stroke="#3a2a00" stroke-width="2.5" stroke-linejoin="round"/></svg><span>Property Business <b>SaaS Demo</b></span></a>
+    <nav class="nav" aria-label="Main"><a href="#stays">Stays</a><a href="#rentals">Rentals</a><a href="#sale">For sale</a><a href="#tours">360° tours</a></nav>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch to dark theme">
+      <svg id="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="hero bleed" aria-labelledby="h1">
+    <img class="hero-img" src="{{IMG:hero}}" alt="Rooftop pool above Playa del Carmen" fetchpriority="high">
+    <div class="hero-in">
+      <span class="eyebrow">Playa del Carmen · Quintana Roo</span>
+      <h1 id="h1">Stay, rent or buy. <em>Direct.</em></h1>
+      <p>Photos, 360° tours and total prices up front. No service fee, no middleman.</p>
+    </div>
+  </section>
+
+  <div class="finder-wrap">
+    <form class="finder" id="finder" aria-label="Find a property" onsubmit="return false">
+      <div class="tabs" role="tablist" aria-label="What are you looking for?">
+        <button type="button" role="tab" class="tab" data-t="stay" aria-selected="true" id="tab-stay">Stay</button>
+        <button type="button" role="tab" class="tab" data-t="rent" aria-selected="false" id="tab-rent">Rent</button>
+        <button type="button" role="tab" class="tab" data-t="buy" aria-selected="false" id="tab-buy">Buy</button>
+      </div>
+      <div class="fields" id="fields" role="tabpanel" aria-labelledby="tab-stay"></div>
+      <div class="quick" id="quick"></div>
+    </form>
+  </div>
+
+  <div class="wrap">
+    <div class="trust" role="list">
+      <div role="listitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M17 6.5C16 5 14.3 4.5 12 4.5c-2.8 0-4.5 1.2-4.5 3S9 10.4 12 11s4.5 1.7 4.5 3.5-1.7 3-4.5 3c-2.4 0-4.2-.6-5.2-2.2"/></svg><p style="margin:0"><b>No service fee</b><span>Total price shown before you book</span></p></div>
+      <div role="listitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.3 3 14.7 0 18M12 3c-3 3.3-3 14.7 0 18"/></svg><p style="margin:0"><b>360° virtual tours</b><span>Walk every room before you visit</span></p></div>
+      <div role="listitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h14V10M10 20v-6h4v6"/></svg><p style="margin:0"><b>Direct with the owner</b><span>Real people, real answers</span></p></div>
+      <div role="listitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h9M8.5 3v2M6 5c.5 3 2.5 6 6 8M12 5c-.5 3-3 6.5-8 9M13 20l4-9 4 9M14.5 17h5"/></svg><p style="margin:0"><b>Español e English</b><span>Pesos or dollars, your choice</span></p></div>
+    </div>
+
+    <section class="sec" id="stays" aria-labelledby="h-stays">
+      <div class="sec-head"><div><h2 id="h-stays">Vacation stays</h2><p>A few nights to a few weeks, steps from the sea.</p></div><a class="more" href="#">See all stays →</a></div>
+      <div class="rail">
+        <a class="card" href="#"><div class="ph"><img src="{{IMG:c3}}" alt=""><div class="badges"><span class="bd sun">★</span><span class="bd">Instant book</span></div></div><div class="cbody"><h3>Solea 5</h3><span class="meta">Playa del Carmen · Apartment</span><span class="meta">1 bedroom · 1 bath · 4 guests · 700 m</span><div class="price"><span class="meta">from</span><b class="num">$80</b><span class="meta">per night</span></div><span class="good">No service fee</span></div></a>
+        <a class="card" href="#"><div class="ph"><img src="{{IMG:c1}}" alt=""><div class="badges"><span class="bd">Instant book</span></div></div><div class="cbody"><h3>Vaiven del Mar FE</h3><span class="meta">Playacar Phase 2 · Apartment</span><span class="meta">3 bedrooms · 3 baths · 8 guests · 1.7 km</span><div class="price"><span class="meta">from</span><b class="num">$250</b><span class="meta">per night</span></div><span class="good">No service fee</span></div></a>
+        <a class="card" href="#"><div class="ph"><img src="{{IMG:c2}}" alt=""><div class="badges"><span class="bd">Instant book</span></div></div><div class="cbody"><h3>Casa del Mar</h3><span class="meta">Playa del Carmen · Apartment</span><span class="meta">2 bedrooms · 2.5 baths · 6 guests · 50 m</span><div class="price"><span class="meta">from</span><b class="num">$145</b><span class="meta">per night</span></div><span class="good">No service fee</span></div></a>
+      </div>
+    </section>
+  </div>
+
+  <section class="tour-band bleed" id="tours" aria-labelledby="h-tours">
+    <div class="wrap">
+      <div class="sec-head"><div><h2 id="h-tours">Walk through before you visit.</h2><p>Tap a tile, look around in 360°, then book a viewing in one step.</p></div><a class="more" href="#">All tours →</a></div>
+      <div class="tiles">
+        <a class="tile" href="#"><img src="{{IMG:t1}}" alt=""><span class="deg">360°</span><span class="play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span><span class="tb"><b>3-bedroom house with a garden</b><span>3 rooms · Playa del Carmen · $7.9M MXN</span></span></a>
+        <a class="tile" href="#"><img src="{{IMG:t2}}" alt=""><span class="deg">360°</span><span class="play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span><span class="tb"><b>2-bedroom condo steps from the sea</b><span>3 rooms · Playa del Carmen · $345,000 USD</span></span></a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="sec" id="rentals" aria-labelledby="h-rent">
+      <div class="sec-head"><div><h2 id="h-rent">Rentals, 1 to 11 months</h2><p>Furnished, short lease, tour in one step.</p></div><a class="more" href="#">See all rentals →</a></div>
+      <div class="rail">
+        <a class="card" href="#"><div class="ph ind"><span class="lab">Playa del Carmen</span><div class="badges"><span class="bd dk">Example</span><span class="bd sun">★</span></div></div><div class="cbody"><h3>Furnished studio downtown</h3><span class="meta">Playa del Carmen · Studio</span><span class="meta">Studio · 1 bath · 38 m² · 1.1 km</span><div class="price"><b class="num">$14,500</b><span class="meta">per month</span></div><span class="rtag">3 to 11 month lease</span><span class="meta">Available from Nov 15 · Furnished</span></div></a>
+        <a class="card" href="#"><div class="ph ind"><span class="lab">Playacar Phase 2</span><div class="badges"><span class="bd dk">Example</span></div></div><div class="cbody"><h3>2-bedroom apartment in Playacar</h3><span class="meta">Playacar Phase 2 · Apartment</span><span class="meta">2 bedrooms · 2 baths · 95 m² · 1.6 km</span><div class="price"><b class="num">$28,000</b><span class="meta">per month</span></div><span class="rtag">6 to 11 month lease</span><span class="meta">Available from Dec 1 · Pets ok</span></div></a>
+        <a class="card" href="#"><div class="ph ind"><span class="lab">Playa del Carmen</span><div class="badges"><span class="bd dk">Example</span></div></div><div class="cbody"><h3>Loft with terrace near Fifth Avenue</h3><span class="meta">Playa del Carmen · Studio</span><span class="meta">1 bedroom · 1 bath · 52 m² · 800 m</span><div class="price"><b class="num">$18,000</b><span class="meta">per month</span></div><span class="rtag">1 to 6 month lease</span><span class="meta">Available from Nov 1 · Furnished</span></div></a>
+      </div>
+    </section>
+
+    <section class="sec" id="sale" aria-labelledby="h-sale">
+      <div class="sec-head"><div><h2 id="h-sale">For sale</h2><p>Book an in-person or video viewing.</p></div><a class="more" href="#">See all properties →</a></div>
+      <div class="rail">
+        <a class="card" href="#"><div class="ph"><img src="{{IMG:s2}}" alt=""><div class="badges"><span class="bd dk">Example</span><span class="bd dk">360°</span><span class="bd">Escritura</span></div></div><div class="cbody"><h3>3-bedroom house with a garden</h3><span class="meta">Playa del Carmen · House</span><span class="meta">3 bedrooms · 2.5 baths · 160 m² · 2.4 km</span><div class="price"><b class="num">$7,900,000</b></div><span class="meta num">$49,375 per m²</span></div></a>
+        <a class="card" href="#"><div class="ph"><img src="{{IMG:s1}}" alt=""><div class="badges"><span class="bd dk">Example</span><span class="bd sun">★</span><span class="bd dk">360°</span><span class="bd">Fideicomiso</span></div></div><div class="cbody"><h3>2-bedroom condo steps from the sea</h3><span class="meta">Playa del Carmen · Apartment</span><span class="meta">2 bedrooms · 2 baths · 98 m² · 300 m</span><div class="price"><b class="num">$345,000</b></div><span class="est num">Estimated income: $2,400/mo · 62% (estimate)</span></div></a>
+        <a class="card" href="#"><div class="ph amb"><span class="lab">Playa del Carmen</span><div class="badges"><span class="bd dk">Example</span><span class="bd dk">360°</span><span class="bd">Escritura</span></div></div><div class="cbody"><h3>450 m² plot near the beach</h3><span class="meta">Playa del Carmen · Land</span><span class="meta">450 m² · 1.9 km</span><div class="price"><b class="num">$2,150,000</b></div><span class="meta num">$4,778 per m²</span></div></a>
+      </div>
+    </section>
+
+    <section class="sec" aria-labelledby="h-how">
+      <div class="sec-head"><div><h2 id="h-how">How it works</h2></div></div>
+      <div class="steps">
+        <div class="step"><h3>Find your place</h3><p>Pick Stay, Rent or Buy, or start from who you are: families, remote workers, investors.</p></div>
+        <div class="step"><h3>Walk through it</h3><p>Browse every photo and tour the rooms in 360° from your phone or laptop.</p></div>
+        <div class="step"><h3>Book direct</h3><p>Reserve a stay, or book a tour or viewing in one step. No service fee.</p></div>
+      </div>
+    </section>
+
+    <section class="sec" aria-labelledby="h-faq">
+      <div class="sec-head"><div><h2 id="h-faq">Frequently asked questions</h2></div></div>
+      <div class="faq">
+        <details><summary>Is there a service fee?</summary><p>No. We do not add a service fee. The total shown includes cleaning and an estimate of taxes; the final price is confirmed when you reserve.</p></details>
+        <details><summary>How do I book a viewing?</summary><p>Pick a property, choose a day and time, and send your details. Viewings can be in person or by video call.</p></details>
+        <details><summary>Which languages do you support?</summary><p>Spanish and English.</p></details>
+      </div>
+    </section>
+    <p class="demo-note">Design reference with sample data. Photos of stays are from the portfolio, the rest are generated samples.</p>
+  </div>
+</main>
+
+<footer class="foot bleed">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div><a class="brand" href="#" style="padding:0"><svg class="star" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#f5b82e"/><polygon points="32,12.5 38.2,26.6 53.5,28.2 42,38.4 45.3,53.4 32,45.6 18.7,53.4 22,38.4 10.5,28.2 25.8,26.6" fill="#3a2a00" stroke="#3a2a00" stroke-width="2.5" stroke-linejoin="round"/></svg><span>Property Business <b style="color:#3cc2b4">SaaS Demo</b></span></a><p style="margin:0;max-width:30ch">Stays, rentals and sales in Playa del Carmen, booked direct.</p></div>
+      <div><h4>Explore</h4><a href="#stays">Stays</a><a href="#rentals">Rentals</a><a href="#sale">For sale</a><a href="#tours">360° tours</a></div>
+      <div><h4>Good to know</h4><a href="#">No service fee</a><a href="#">How viewings work</a><a href="#">FAQ</a></div>
+      <div><h4>Legal</h4><a href="#">Privacy notice</a><a href="#">Terms</a><a href="#">Cancellation policy</a></div>
+    </div>
+    <small>© 2026 Property Business SaaS Demo. Prices shown are indicative until confirmed at booking.</small>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var FIELDS = {
+    stay: { cta: "Search stays", html: '<label class="fld">Check-in<input type="date" value="2026-12-20"></label><label class="fld">Check-out<input type="date" value="2026-12-27"></label><label class="fld">Guests<select><option>2 guests</option><option>4 guests</option><option>6 guests</option><option>8 guests</option></select></label><label class="fld">Bedrooms<select><option>Any</option><option>1+</option><option>2+</option><option>3+</option></select></label>', quick: ["Families", "Couples", "Remote workers", "Beach first"] },
+    rent: { cta: "Search rentals", html: '<label class="fld">Lease length<select><option>Any</option><option>1 month</option><option>3 months</option><option>6 months</option><option>11 months</option></select></label><label class="fld">Move-in<input type="date" value="2026-11-15"></label><label class="fld">Bedrooms<select><option>Any</option><option>1+</option><option>2+</option></select></label><label class="fld">Max budget (MXN)<input type="number" placeholder="25000" step="1000"></label>', quick: ["Relocating professionals", "Remote workers", "Families", "With pets"] },
+    buy: { cta: "Search for sale", html: '<label class="fld">Type<select><option>Any</option><option>Apartment</option><option>House</option><option>Land</option></select></label><label class="fld">Bedrooms<select><option>Any</option><option>1+</option><option>2+</option><option>3+</option></select></label><label class="fld">Max price (MXN)<input type="number" placeholder="8000000" step="100000"></label><label class="fld">Tour<select><option>Any</option><option>With 360° tour</option></select></label>', quick: ["Investors", "Second home", "First home", "Beach first"] }
+  };
+  function render(t) {
+    var f = FIELDS[t];
+    $("fields").innerHTML = f.html + '<button type="submit" class="go" data-t="' + t + '">' + f.cta + "</button>";
+    $("fields").setAttribute("aria-labelledby", "tab-" + t);
+    $("quick").innerHTML = "<span>Or start from who you are:</span>" + f.quick.map(function (q) { return '<a class="chip" href="#">' + q + "</a>"; }).join("");
+    document.querySelectorAll(".tab").forEach(function (b) { b.setAttribute("aria-selected", String(b.getAttribute("data-t") === t)); b.tabIndex = b.getAttribute("data-t") === t ? 0 : -1; });
+  }
+  document.querySelectorAll(".tab").forEach(function (b, i, all) {
+    b.addEventListener("click", function () { render(b.getAttribute("data-t")); });
+    b.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      var n = all[(i + (e.key === "ArrowRight" ? 1 : all.length - 1)) % all.length]; n.focus(); render(n.getAttribute("data-t")); e.preventDefault();
+    });
+  });
+  render("stay");
+  var SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>', MOON = '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+  function eff() { return document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); }
+  function paint() { var d = eff() === "dark"; $("ico").innerHTML = d ? SUN : MOON; $("theme").setAttribute("aria-label", d ? "Switch to light theme" : "Switch to dark theme"); }
+  $("theme").addEventListener("click", function () { document.documentElement.dataset.theme = eff() === "dark" ? "light" : "dark"; paint(); });
+  paint();
+})();
+</script>

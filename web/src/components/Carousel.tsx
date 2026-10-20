@@ -1,9 +1,10 @@
 'use client'
 
-import {useCallback, useEffect, useId, useRef, useState} from 'react'
+import {useCallback, useEffect, useId, useRef} from 'react'
 import {Photo} from './Photo'
 import type {SanityPhoto} from '@/sanity/image'
 import type {Locale} from '@/i18n/config'
+import {loc} from '@/i18n/dictionary'
 
 export type CarouselLabels = {
   label: string
@@ -20,10 +21,11 @@ export type CarouselLabels = {
  *  - Screen readers: carousel/slide roles, a polite live region announcing "Photo 3 of 20".
  *  - No autoplay, reduced-motion aware.
  */
-export function Carousel({photos, locale, labels, index, onIndexChange, sizes, showThumbs = true, fit = 'cover', autoFocus, onExpand, expandLabel, fillHeight}: {
+export function Carousel({photos, locale, labels, altBase, index, onIndexChange, sizes, showThumbs = true, fit = 'cover', autoFocus, onExpand, expandLabel, fillHeight}: {
   photos: SanityPhoto[]
   locale: Locale
   labels: CarouselLabels
+  altBase: string
   index: number
   onIndexChange: (i: number) => void
   sizes: string
@@ -37,9 +39,11 @@ export function Carousel({photos, locale, labels, index, onIndexChange, sizes, s
   const trackRef = useRef<HTMLDivElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const raf = useRef(0)
+  // While a button/key-driven scroll animates, ignore scroll events until it arrives at the target slide.
   const programmatic = useRef(false)
+  const target = useRef(0)
+  const unlock = useRef(0)
   const helpId = useId()
-  const [live, setLive] = useState('')
   const n = photos.length
 
   const goTo = useCallback((i: number, smooth = true) => {
@@ -48,14 +52,20 @@ export function Carousel({photos, locale, labels, index, onIndexChange, sizes, s
     const next = Math.max(0, Math.min(n - 1, i))
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     programmatic.current = true
+    target.current = next
     track.scrollTo({left: next * track.clientWidth, behavior: smooth && !reduce ? 'smooth' : 'auto'})
     onIndexChange(next)
-    window.setTimeout(() => (programmatic.current = false), 450)
+    window.clearTimeout(unlock.current)
+    unlock.current = window.setTimeout(() => (programmatic.current = false), 2000) // safety net only
   }, [n, onIndexChange])
 
   // Keep the index in sync with swipes: scroll position is the source of truth.
   const onScroll = () => {
-    if (programmatic.current) return
+    const t = trackRef.current
+    if (programmatic.current) {
+      if (t && Math.abs(t.scrollLeft - target.current * t.clientWidth) < 2) programmatic.current = false
+      return
+    }
     cancelAnimationFrame(raf.current)
     raf.current = requestAnimationFrame(() => {
       const t = trackRef.current
@@ -71,22 +81,31 @@ export function Carousel({photos, locale, labels, index, onIndexChange, sizes, s
     if (t && t.clientWidth && Math.round(t.scrollLeft / t.clientWidth) !== index && !programmatic.current) goTo(index, false)
   }, [index, goTo])
 
-  useEffect(() => {
-    setLive(labels.photoOf(index + 1, n))
-  }, [index, n, labels])
+  // Announced by the polite live region whenever the index changes.
+  const live = labels.photoOf(index + 1, n)
 
   useEffect(() => {
     if (autoFocus) rootRef.current?.focus()
   }, [autoFocus])
 
-  // Keep the layout stable on resize/rotation.
+  // Keep the current slide aligned on resize/rotation. Only react to real width changes:
+  // a ResizeObserver also fires once when it starts observing, which would fight a swipe in progress.
+  const indexRef = useRef(index)
+  useEffect(() => {
+    indexRef.current = index
+  }, [index])
   useEffect(() => {
     const t = trackRef.current
     if (!t) return
-    const ro = new ResizeObserver(() => { t.scrollLeft = index * t.clientWidth })
+    let lastWidth = t.clientWidth
+    const ro = new ResizeObserver(() => {
+      if (t.clientWidth === lastWidth) return
+      lastWidth = t.clientWidth
+      t.scrollLeft = indexRef.current * t.clientWidth
+    })
     ro.observe(t)
     return () => ro.disconnect()
-  }, [index])
+  }, [])
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     // Keys only act on the carousel itself, never on the buttons inside it.
@@ -115,7 +134,7 @@ export function Carousel({photos, locale, labels, index, onIndexChange, sizes, s
         tabIndex={0}
         onKeyDown={onKeyDown}
       >
-        <div ref={trackRef} className="track" onScroll={onScroll}>
+        <div ref={trackRef} className="track" onScroll={onScroll} onTouchStart={() => (programmatic.current = false)} onWheel={() => (programmatic.current = false)}>
           {photos.map((p, i) => (
             <div
               key={p.id + i}
@@ -125,9 +144,14 @@ export function Carousel({photos, locale, labels, index, onIndexChange, sizes, s
               aria-label={labels.photoOf(i + 1, n)}
               aria-hidden={Math.abs(i - index) > 1 ? true : undefined}
               onClick={onExpand}
-              style={onExpand ? {cursor: 'zoom-in'} : undefined}
+              style={{
+                ...(onExpand ? {cursor: 'zoom-in'} : {}),
+                // Slides far from the current one stay empty (just the blurred preview) so a 20-photo gallery
+                // does not download 20 images up front. Swiping prefetches the next ones.
+                ...(Math.abs(i - index) > 2 && p.lqip ? {backgroundImage: `url(${p.lqip})`, backgroundSize: 'cover'} : {}),
+              }}
             >
-              <Photo photo={p} locale={locale} sizes={sizes} priority={i === 0} fit={fit} />
+              {Math.abs(i - index) <= 2 ? <Photo photo={p} locale={locale} sizes={sizes} priority={i === 0 && index === 0} fit={fit} alt={loc(p.alt, locale) || `${altBase} · ${labels.photoOf(i + 1, n)}`} /> : null}
             </div>
           ))}
         </div>

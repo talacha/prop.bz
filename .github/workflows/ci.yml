@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            studio/package-lock.json
+
+      - name: Studio — install and typecheck
+        working-directory: studio
+        run: |
+          npm ci
+          npx tsc --noEmit
+
+      - name: Web — install, typecheck, lint
+        working-directory: web
+        run: |
+          npm ci
+          npm run typecheck
+          npx eslint src
+
+      - name: Web — production build
+        working-directory: web
+        run: npm run build
+
+      - name: Browser tests (Chromium, software WebGL)
+        working-directory: web
+        env:
+          PW_CHANNEL: ''          # use the Chromium that Playwright installs
+          SKIP_RATE_WAIT: ''      # the security suite waits out the rate-limit window
+        run: |
+          npx playwright-core install --with-deps chromium
+          npx next start -p 3100 &
+          npx wait-on http://localhost:3100/es --timeout 60000
+          npm run e2e
+
+      - name: SEO audit (titles, descriptions, canonical, hreflang, share images)
+        working-directory: web
+        run: python3 -I e2e/seo-audit.py http://localhost:3100

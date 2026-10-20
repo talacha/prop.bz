@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import {Photo} from './Photo'
 import {propertyPath, type Locale} from '@/i18n/config'
-import {formatMoney, getDictionary, loc, type Dictionary} from '@/i18n/dictionary'
+import {getDictionary, loc, type Dictionary} from '@/i18n/dictionary'
+import {Price} from './PrefsProvider'
 import {estimateStay, nightsBetween} from '@/lib/pricing'
 import type {PropertyCardData} from '@/sanity/types'
 
@@ -12,9 +13,11 @@ type Props = {
   carry?: {in?: string; out?: string; guests?: string}
   taxPercent: number
   priority?: boolean
+  headingLevel?: 2 | 3
 }
 
-export function PropertyCard({p, locale, carry, taxPercent, priority}: Props) {
+export function PropertyCard({p, locale, carry, taxPercent, priority, headingLevel = 3}: Props) {
+  const Heading = `h${headingLevel}` as const
   const t = getDictionary(locale)
   const qs = new URLSearchParams()
   if (p.listingType === 'vacation' && carry) {
@@ -28,12 +31,13 @@ export function PropertyCard({p, locale, carry, taxPercent, priority}: Props) {
   const reserved = p.status === 'reserved'
 
   return (
-    <Link href={href} className="card" data-type={p.listingType} aria-label={loc(p.title, locale)}>
+    <Link href={href} className="card" data-type={p.listingType}>
       <div className="card-photo">
-        {cover ? <Photo photo={cover} locale={locale} sizes="(max-width: 700px) 100vw, 360px" priority={priority} /> : <div className="ph-empty" aria-hidden="true">{loc(p.area, locale) || '·'}</div>}
+        {cover ? <Photo photo={cover} locale={locale} sizes="(max-width: 700px) 100vw, 360px" priority={priority} ratio="4:3" quality={60} /> : <div className="ph-empty" aria-hidden="true">{loc(p.area, locale) || '·'}</div>}
         <div className="badges">
           {p.isSample && <span className="badge dark">{t.sample}</span>}
           {p.featured && <span className="badge sun">★</span>}
+          {p.tourRooms ? <span className="badge tour" title={t.tour}>360°</span> : null}
           {p.listingType === 'vacation' && p.vacation?.instantBook && <span className="badge">{t.instant}</span>}
           {p.listingType === 'sale' && p.sale?.ownership && p.sale.ownership !== 'other' && <span className="badge">{t[p.sale.ownership]}</span>}
           {reserved && <span className="badge dark">{p.listingType === 'sale' ? 'Under offer' : 'Reserved'}</span>}
@@ -42,10 +46,10 @@ export function PropertyCard({p, locale, carry, taxPercent, priority}: Props) {
         {p.photoCount > 1 && <span className="photo-count num">{t.photos(p.photoCount)}</span>}
       </div>
       <div className="card-body">
-        <h3>{loc(p.title, locale)}</h3>
+        <Heading>{loc(p.title, locale)}</Heading>
         <span className="meta">{[loc(p.area, locale), p.propertyType && t.types[p.propertyType]].filter(Boolean).join(' · ')}</span>
         <Specs p={p} t={t} />
-        {p.listingType === 'vacation' && <VacationFoot p={p} locale={locale} t={t} carry={carry} taxPercent={taxPercent} />}
+        {p.listingType === 'vacation' && <VacationFoot p={p} t={t} carry={carry} taxPercent={taxPercent} />}
         {p.listingType === 'rental' && <RentalFoot p={p} locale={locale} t={t} />}
         {p.listingType === 'sale' && <SaleFoot p={p} locale={locale} t={t} />}
       </div>
@@ -69,7 +73,7 @@ function Specs({p, t}: {p: PropertyCardData; t: Dictionary}) {
 }
 
 /** Vacation: nightly rate, estimated stay total when dates are chosen, trust line. */
-function VacationFoot({p, locale, t, carry, taxPercent}: {p: PropertyCardData; locale: Locale; t: Dictionary; carry?: Props['carry']; taxPercent: number}) {
+function VacationFoot({p, t, carry, taxPercent}: {p: PropertyCardData; t: Dictionary; carry?: Props['carry']; taxPercent: number}) {
   const v = p.vacation
   if (!v?.nightlyRate) return null
   const nights = nightsBetween(carry?.in, carry?.out)
@@ -78,11 +82,11 @@ function VacationFoot({p, locale, t, carry, taxPercent}: {p: PropertyCardData; l
     <div className="card-foot">
       {est ? (
         <>
-          <div className="price"><b className="num">{formatMoney(est.total, v.currency, locale)}</b><span className="meta">{t.total} · {t.nights(nights)}</span></div>
-          <span className="meta num">{formatMoney(v.nightlyRate, v.currency, locale)} {t.perNight}</span>
+          <div className="price"><b><Price amount={est.total} currency={v.currency} /></b><span className="meta">{t.total} · {t.nights(nights)}</span></div>
+          <span className="meta"><Price amount={v.nightlyRate} currency={v.currency} original /> {t.perNight}</span>
         </>
       ) : (
-        <div className="price"><span className="meta">{t.from}</span><b className="num">{formatMoney(v.nightlyRate, v.currency, locale)}</b><span className="meta">{t.perNight}</span></div>
+        <div className="price"><span className="meta">{t.from}</span><b><Price amount={v.nightlyRate} currency={v.currency} /></b><span className="meta">{t.perNight}</span></div>
       )}
       <span className="good">{t.noService}</span>
     </div>
@@ -95,7 +99,7 @@ function RentalFoot({p, locale, t}: {p: PropertyCardData; locale: Locale; t: Dic
   if (!r?.monthlyRent) return null
   return (
     <div className="card-foot">
-      <div className="price"><b className="num">{formatMoney(r.monthlyRent, r.currency, locale)}</b><span className="meta">{t.perMonth}</span></div>
+      <div className="price"><b><Price amount={r.monthlyRent} currency={r.currency} /></b><span className="meta">{t.perMonth}</span></div>
       {r.minLeaseMonths && r.maxLeaseMonths && <span className="rent-tag">{t.leaseRange(r.minLeaseMonths, r.maxLeaseMonths)}</span>}
       <span className="meta">
         {[r.availableFrom && `${t.availableFrom} ${new Date(r.availableFrom + 'T00:00:00Z').toLocaleDateString(locale === 'es' ? 'es-MX' : 'en-US', {day: 'numeric', month: 'short', timeZone: 'UTC'})}`,
@@ -114,12 +118,12 @@ function SaleFoot({p, locale, t}: {p: PropertyCardData; locale: Locale; t: Dicti
   const inc = s.incomeEstimate
   return (
     <div className="card-foot">
-      <div className="price"><b className="num">{formatMoney(s.askingPrice, s.currency, locale)}</b></div>
-      {area ? <span className="meta num">{formatMoney(Math.round(s.askingPrice / area), s.currency, locale)} {t.perM2}</span> : null}
+      <div className="price"><b><Price amount={s.askingPrice} currency={s.currency} /></b></div>
+      {area ? <span className="meta"><Price amount={Math.round(s.askingPrice / area)} currency={s.currency} /> {t.perM2}</span> : null}
       {inc?.monthlyRevenue ? (
-        <span className="est num">{t.estYield}: {formatMoney(inc.monthlyRevenue, inc.currency, locale)}/{locale === 'es' ? 'mes' : 'mo'}{inc.occupancyPercent ? ` · ${inc.occupancyPercent}%` : ''} ({t.estimate})</span>
+        <span className="est num">{t.estYield}: <Price amount={inc.monthlyRevenue} currency={inc.currency} />/{locale === 'es' ? 'mes' : 'mo'}{inc.occupancyPercent ? ` · ${inc.occupancyPercent}%` : ''} ({t.estimate})</span>
       ) : s.monthlyMaintenanceFee ? (
-        <span className="meta num">{t.maintenance}: {formatMoney(s.monthlyMaintenanceFee, s.currency, locale)}/{locale === 'es' ? 'mes' : 'mo'}</span>
+        <span className="meta num">{t.maintenance}: <Price amount={s.monthlyMaintenanceFee} currency={s.currency} />/{locale === 'es' ? 'mes' : 'mo'}</span>
       ) : null}
     </div>
   )

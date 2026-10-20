@@ -4,6 +4,7 @@ export default function sanityImageLoader({src, width, quality}: {src: string; w
   url.searchParams.set('w', String(width))
   url.searchParams.set('q', String(quality ?? 75))
   url.searchParams.set('auto', 'format')
-  url.searchParams.set('fit', 'max')
+  // With an aspect ratio (ar) the CDN crops to it; otherwise it only caps the width
+  url.searchParams.set('fit', url.searchParams.has('ar') ? 'crop' : 'max')
   return url.toString()
 }
