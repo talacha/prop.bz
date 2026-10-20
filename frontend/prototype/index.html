@@ -1,0 +1,368 @@
+<title>A Toda Madre Direct</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky search rail on top, live card grid below, one slide-over sheet that carries detail -> checkout -> confirmation. */
+:root {
+  --bg: #f4f7f6;
+  --surface: #ffffff;
+  --ink: #0e2230;
+  --muted: #5a6e78;
+  --line: #d9e2e2;
+  --accent: #0b6e66;
+  --accent-ink: #ffffff;
+  --accent-soft: #dff1ee;
+  --sun: #f5b82e;
+  --sun-ink: #3a2a00;
+  --bad: #b3261e;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1820; --surface: #11262f; --ink: #e8f1f1; --muted: #93aab3; --line: #234250;
+    --accent: #3cc2b4; --accent-ink: #04201d; --accent-soft: #123a38; --sun: #f5b82e; --sun-ink: #3a2a00; --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1820; --surface: #11262f; --ink: #e8f1f1; --muted: #93aab3; --line: #234250;
+  --accent: #3cc2b4; --accent-ink: #04201d; --accent-soft: #123a38; --sun: #f5b82e; --sun-ink: #3a2a00; --bad: #ff8a80;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--body); padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.1; }
+.wrap { max-width: 1120px; margin-inline: auto; }
+.num { font-variant-numeric: tabular-nums; }
+
+header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 16px; flex-wrap: wrap; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; }
+.brand span { color: var(--accent); }
+.top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pill { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: .875rem; }
+.pill[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.clicks { background: var(--sun); color: var(--sun-ink); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: .875rem; display: inline-flex; gap: 8px; align-items: center; }
+.clicks button { background: transparent; border: 0; text-decoration: underline; padding: 0; color: inherit; font-size: .8rem; }
+
+.hero { padding-block: 8px 20px; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 700; letter-spacing: -0.02em; max-width: 16ch; }
+.hero p { color: var(--muted); max-width: 52ch; margin: 12px 0 0; }
+
+.search { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 10px; display: grid; grid-template-columns: 1.6fr 1fr auto; gap: 8px; box-shadow: 0 6px 24px rgba(14, 34, 48, .08); }
+.field { display: flex; flex-direction: column; text-align: left; border: 0; background: transparent; padding: 8px 12px; border-radius: 10px; min-width: 0; }
+.field:hover { background: var(--accent-soft); }
+.field small { color: var(--muted); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
+.field b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.live { align-self: center; font-size: .8rem; color: var(--muted); padding-inline: 8px; }
+
+.pop { position: absolute; z-index: 30; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: 0 16px 48px rgba(14, 34, 48, .18); }
+.rel { position: relative; }
+#calpop { top: calc(100% + 8px); left: 0; width: min(100%, 700px); }
+#guestpop { top: calc(100% + 8px); left: 0; width: min(100%, 300px); }
+.cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.cal-head button { border: 1px solid var(--line); background: transparent; border-radius: 8px; width: 36px; height: 36px; }
+.months { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.month h3 { font-size: 1rem; text-align: center; margin-bottom: 8px; }
+.dow, .days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.dow span { text-align: center; font-size: .72rem; color: var(--muted); padding-block: 4px; }
+.day { aspect-ratio: 1; border: 0; background: transparent; border-radius: 999px; font-size: .875rem; position: relative; min-width: 0; }
+.day:hover:not(:disabled) { background: var(--accent-soft); }
+.day:disabled { color: var(--muted); opacity: .4; cursor: not-allowed; text-decoration: line-through; }
+.day.in-range { background: var(--accent-soft); border-radius: 0; }
+.day.edge { background: var(--accent); color: var(--accent-ink); }
+.cal-foot { margin-top: 12px; color: var(--muted); font-size: .85rem; }
+.step { display: flex; justify-content: space-between; align-items: center; padding-block: 8px; }
+.step .ctl { display: flex; gap: 12px; align-items: center; }
+.step .ctl button { width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: transparent; font-size: 1.1rem; }
+.step .ctl button:disabled { opacity: .35; cursor: not-allowed; }
+
+.results-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-block: 28px 12px; }
+.results-head h2 { font-size: 1.4rem; }
+.results-head span { color: var(--muted); font-size: .9rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; text-align: left; padding: 0; display: flex; flex-direction: column; min-width: 0; }
+.card:hover:not(.off) { border-color: var(--accent); }
+.card.off { opacity: .55; cursor: default; }
+.ph { aspect-ratio: 4 / 3; position: relative; display: block; max-width: 100%; }
+.ph::after { content: "photo placeholder"; position: absolute; left: 12px; bottom: 10px; font-size: .7rem; color: rgba(255,255,255,.85); letter-spacing: .06em; text-transform: uppercase; }
+.badge { position: absolute; top: 12px; left: 12px; background: var(--surface); color: var(--ink); border-radius: 999px; padding: 4px 10px; font-size: .75rem; font-weight: 600; z-index: 1; }
+.badge.no { background: var(--bad); color: #fff; }
+.card .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; }
+.card h3 { font-size: 1.15rem; }
+.meta { color: var(--muted); font-size: .875rem; }
+.price { margin-top: 8px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.price b { font-family: var(--display); font-size: 1.4rem; }
+.save { color: var(--accent); font-size: .8rem; font-weight: 600; }
+
+.scrim { position: fixed; inset: 0; background: rgba(5, 15, 22, .55); z-index: 40; }
+.sheet { position: fixed; top: 0; right: 0; bottom: 0; width: min(100%, 520px); background: var(--bg); z-index: 50; overflow-y: auto; padding: 0 0 calc(24px + env(safe-area-inset-bottom, 0px)); box-shadow: -16px 0 48px rgba(0,0,0,.25); }
+.sheet-in { padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 0; display: flex; flex-direction: column; gap: 16px; }
+.sheet .close { align-self: flex-end; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; }
+.sheet h2 { font-size: 1.8rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: .85rem; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.lines { display: grid; gap: 6px; margin: 0; }
+.lines div { display: flex; justify-content: space-between; gap: 12px; }
+.lines dt { color: var(--muted); }
+.lines dd { margin: 0; }
+.lines .total { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; font-weight: 600; font-size: 1.1rem; }
+.cmp { background: var(--accent-soft); border-radius: 12px; padding: 10px 14px; font-size: .9rem; }
+.cmp small { display: block; color: var(--muted); }
+.btn { border: 0; border-radius: 12px; padding: 14px 18px; font-weight: 600; background: var(--accent); color: var(--accent-ink); width: 100%; }
+.btn.alt { background: var(--ink); color: var(--bg); }
+.btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.form { display: grid; gap: 10px; }
+.form label { display: grid; gap: 4px; font-size: .85rem; color: var(--muted); }
+.form input[type="text"], .form input[type="email"], .form input[type="tel"] { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 12px; color: var(--ink); width: 100%; }
+.err { color: var(--bad); font-size: .85rem; min-height: 1.2em; }
+.fine { color: var(--muted); font-size: .8rem; }
+.ok { text-align: center; padding-block: 24px; display: grid; gap: 10px; }
+.ok .ref { font-family: var(--display); font-size: 2rem; letter-spacing: .04em; }
+.demo-note { margin-top: 32px; color: var(--muted); font-size: .8rem; max-width: 70ch; }
+
+@media (max-width: 640px) {
+  .search { grid-template-columns: 1fr 1fr; }
+  .live { grid-column: 1 / -1; padding-block: 0 4px; }
+  .months { grid-template-columns: 1fr; }
+  .month + .month { display: none; }
+  .pop { position: fixed; left: 16px !important; right: 16px; top: auto !important; bottom: 16px; width: auto !important; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sheet { animation: slide .22s ease-out; }
+  @keyframes slide { from { transform: translateX(24px); opacity: 0; } }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">A Toda Madre <span>Direct</span></div>
+    <div class="top-actions">
+      <span class="clicks" id="clicks" role="status" aria-live="polite"><span><span id="clickN">0</span> clicks so far</span><button type="button" id="resetClicks" data-nocount>reset</button></span>
+      <button class="pill" type="button" id="langBtn" aria-pressed="false">ES</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 id="tHero">Stay in Playa del Carmen. Book direct.</h1>
+    <p id="tSub">No service fee, no account wall. Pick your dates and the price you see is the price you pay.</p>
+  </section>
+
+  <div class="rel">
+    <div class="search" role="search">
+      <div class="rel" style="display:contents">
+        <button class="field" type="button" id="datesBtn" aria-haspopup="dialog" aria-expanded="false"><small id="tDates">Dates</small><b id="datesVal"></b></button>
+      </div>
+      <button class="field" type="button" id="guestsBtn" aria-haspopup="dialog" aria-expanded="false"><small id="tGuests">Guests</small><b id="guestsVal"></b></button>
+      <div class="live" id="liveNote">Results update as you choose</div>
+    </div>
+    <div class="pop" id="calpop" hidden role="dialog" aria-label="Choose dates"></div>
+    <div class="pop" id="guestpop" hidden role="dialog" aria-label="Guests" style="left:calc(60% - 20px)"></div>
+  </div>
+
+  <div class="results-head"><h2 id="resTitle"></h2><span id="resSub"></span></div>
+  <div class="grid" id="grid"></div>
+
+  <p class="demo-note">Interactive prototype with sample data. Photos are placeholders, prices and taxes are illustrative. Payment is simulated. The click counter is a design aid and would not ship.</p>
+</div>
+
+<div id="overlay" hidden>
+  <div class="scrim" id="scrim" data-nocount></div>
+  <aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></aside>
+</div>
+
+<script>
+(function () {
+  var T = {
+    en: { hero: "Stay in Playa del Carmen. Book direct.", sub: "No service fee, no account wall. Pick your dates and the price you see is the price you pay.", dates: "Dates", guests: "Guests", add: "Add dates", g: function (n) { return n + (n === 1 ? " guest" : " guests"); }, avail: "Available", sold: "Not available for your dates", total: "total", night: "night", nights: "nights", from: "from", perNight: "per night", reserve: "Reserve", pay: "Pay", walletPay: "Pay with Apple Pay / Google Pay", card: "Or pay by card", name: "Full name", email: "Email", phone: "Phone (WhatsApp)", back: "Back", close: "Close", tax: "Taxes", clean: "Cleaning fee", accom: "nights", noSvc: "Service fee", free: "$0", cancel: "Free cancellation until 14 days before check-in.", agree: "I agree to the house rules and cancellation policy", done: "You're booked", sent: "Confirmation and check-in details sent to", noFee: "No service fee", resultsFor: function (n) { return n + (n === 1 ? " place" : " places") + " free for your stay"; }, pickDates: "Pick dates to see the total price", clearNote: "Totals include cleaning and taxes. No hidden fees.", keep: "Keep exploring" },
+    es: { hero: "Hospédate en Playa del Carmen. Reserva directo.", sub: "Sin cuota de servicio y sin crear cuenta. Elige tus fechas y el precio que ves es el que pagas.", dates: "Fechas", guests: "Huéspedes", add: "Agregar fechas", g: function (n) { return n + (n === 1 ? " huésped" : " huéspedes"); }, avail: "Disponible", sold: "No disponible en tus fechas", total: "total", night: "noche", nights: "noches", from: "desde", perNight: "por noche", reserve: "Reservar", pay: "Pagar", walletPay: "Pagar con Apple Pay / Google Pay", card: "O paga con tarjeta", name: "Nombre completo", email: "Correo", phone: "Teléfono (WhatsApp)", back: "Atrás", close: "Cerrar", tax: "Impuestos", clean: "Limpieza", accom: "noches", noSvc: "Cuota de servicio", free: "$0", cancel: "Cancelación gratis hasta 14 días antes del check-in.", agree: "Acepto el reglamento y la política de cancelación", done: "Reserva confirmada", sent: "Enviamos la confirmación y los datos de check-in a", noFee: "Sin cuota de servicio", resultsFor: function (n) { return n + (n === 1 ? " lugar libre" : " lugares libres") + " para tu estancia"; }, pickDates: "Elige fechas para ver el precio total", clearNote: "El total incluye limpieza e impuestos. Sin cargos ocultos.", keep: "Seguir viendo" }
+  };
+  var lang = "en";
+  var t = function (k) { return T[lang][k]; };
+
+  var P = [
+    { id: "vdm-fe", name: "Vaiven del Mar FE", area: "Playacar Fase 2", pax: 8, br: 3, ba: 3, beach: 1.7, nightly: 250, clean: 90, amen: ["Shared pool", "A/C", "Wifi", "Equipped kitchen", "Washer", "Terrace", "Safe", "Reef Beach Club card"], booked: [["2026-12-22", "2026-12-29"]], hue: 188 },
+    { id: "vdm-lb", name: "Vaiven del Mar LB", area: "Playacar Fase 2", pax: 8, br: 3, ba: 3, beach: 1.7, nightly: 250, clean: 90, amen: ["Shared pool", "A/C", "Wifi", "Equipped kitchen", "Washer", "Terrace", "Safe"], booked: [], hue: 172 },
+    { id: "solea-5", name: "Solea 5", area: "Playa del Carmen", pax: 4, br: 1, ba: 1, beach: 0.7, nightly: 80, clean: 35, amen: ["Rooftop gym", "Shared pool", "A/C", "Wifi", "Equipped kitchen", "Washer", "Beach chairs + umbrella", "Elevator"], booked: [], hue: 205 },
+    { id: "solea-4", name: "Solea 4", area: "Playa del Carmen", pax: 4, br: 1, ba: 1, beach: 0.7, nightly: 73, clean: 35, amen: ["Rooftop gym", "Shared pool", "A/C", "Wifi", "Equipped kitchen", "Washer", "Elevator"], booked: [["2026-12-26", "2027-01-03"]], hue: 215 },
+    { id: "solea-2", name: "Solea 2", area: "Playa del Carmen", pax: 4, br: 1, ba: 1, beach: 0.7, nightly: 73, clean: 35, amen: ["Rooftop gym", "Shared pool", "A/C", "Wifi", "Equipped kitchen", "Washer", "Elevator"], booked: [["2026-12-18", "2026-12-23"]], hue: 160 },
+    { id: "casa-mar", name: "Casa del Mar", area: "Playa del Carmen", pax: 6, br: 2, ba: 2, beach: 0.9, nightly: 145, clean: 60, amen: ["A/C", "Wifi", "Equipped kitchen", "Washer", "Terrace", "Parking"], booked: [], hue: 24 }
+  ];
+  var RATE = { iva: 0.16, ish: 0.03 }; // illustrative, configurable server-side
+
+  var S = { inD: "2026-12-20", outD: "2026-12-27", guests: 2, view: { y: 2026, m: 11 }, sel: null, clicks: 0 };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+  var iso = function (y, m, d) { return y + "-" + pad(m + 1) + "-" + pad(d); };
+  var toDate = function (s) { var a = s.split("-"); return Date.UTC(+a[0], +a[1] - 1, +a[2]); };
+  var nightsBetween = function (a, b) { return Math.round((toDate(b) - toDate(a)) / 86400000); };
+  var usd = function (n) { return "$" + Math.round(n).toLocaleString("en-US"); };
+  var fmtD = function (s) { return new Date(toDate(s)).toLocaleDateString(lang === "es" ? "es-MX" : "en-US", { month: "short", day: "numeric", timeZone: "UTC" }); };
+
+  function isFree(p, a, b) {
+    for (var i = 0; i < p.booked.length; i++) { var r = p.booked[i]; if (a < r[1] && b > r[0]) return false; }
+    return true;
+  }
+  function quote(p) {
+    var n = nightsBetween(S.inD, S.outD);
+    var accom = p.nightly * n;
+    var sub = accom + p.clean;
+    var tax = sub * (RATE.iva + RATE.ish);
+    var total = sub + tax;
+    return { n: n, accom: accom, clean: p.clean, tax: tax, total: total };
+  }
+  function hasDates() { return S.inD && S.outD; }
+
+  /* ---------- search rail ---------- */
+  function renderRail() {
+    $("datesVal").textContent = hasDates() ? fmtD(S.inD) + " – " + fmtD(S.outD) : t("add");
+    $("guestsVal").textContent = t("g")(S.guests);
+    $("tDates").textContent = t("dates"); $("tGuests").textContent = t("guests");
+    $("tHero").textContent = t("hero"); $("tSub").textContent = t("sub");
+  }
+
+  function renderGrid() {
+    var list = P.filter(function (p) { return p.pax >= S.guests; });
+    var free = hasDates() ? list.filter(function (p) { return isFree(p, S.inD, S.outD); }) : list;
+    $("resTitle").textContent = hasDates() ? t("resultsFor")(free.length) : t("pickDates");
+    $("resSub").textContent = hasDates() ? t("clearNote") : "";
+    var html = "";
+    list.forEach(function (p) {
+      var ok = !hasDates() || isFree(p, S.inD, S.outD);
+      var q = hasDates() ? quote(p) : null;
+      html += '<button type="button" class="card' + (ok ? "" : " off") + '" data-id="' + p.id + '"' + (ok ? "" : " disabled") + ' aria-label="' + p.name + '">' +
+        '<span class="ph" style="background:linear-gradient(150deg,hsl(' + p.hue + ',55%,42%),hsl(' + (p.hue + 40) + ',60%,26%))">' +
+        '<span class="badge' + (ok ? "" : " no") + '">' + (ok ? t("avail") : t("sold")) + '</span></span>' +
+        '<span class="body"><h3>' + p.name + '</h3>' +
+        '<span class="meta">' + p.area + " · " + p.br + " BR · " + p.ba + " BA · " + t("g")(p.pax) + '</span>' +
+        '<span class="meta">' + p.beach.toFixed(1) + ' km</span>' +
+        '<span class="price">' + (q && ok ? '<b class="num">' + usd(q.total) + '</b><span class="meta">' + t("total") + " · " + q.n + " " + (q.n === 1 ? t("night") : t("nights")) + '</span><span class="save">' + t("noFee") + '</span>'
+          : '<b class="num">' + usd(p.nightly) + '</b><span class="meta">' + t("perNight") + '</span>') + '</span></span></button>';
+    });
+    $("grid").innerHTML = html;
+  }
+
+  /* ---------- calendar ---------- */
+  var MN = { en: ["January","February","March","April","May","June","July","August","September","October","November","December"], es: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"] };
+  var DW = { en: ["S","M","T","W","T","F","S"], es: ["D","L","M","M","J","V","S"] };
+  var TODAY = "2026-10-20";
+  function monthHtml(y, m) {
+    var first = new Date(Date.UTC(y, m, 1)).getUTCDay();
+    var dim = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    var h = '<div class="month"><h3>' + MN[lang][m] + " " + y + '</h3><div class="dow">' + DW[lang].map(function (d) { return "<span>" + d + "</span>"; }).join("") + '</div><div class="days">';
+    for (var i = 0; i < first; i++) h += "<span></span>";
+    for (var d = 1; d <= dim; d++) {
+      var s = iso(y, m, d), cls = "day", dis = s < TODAY;
+      if (S.inD && s === S.inD) cls += " edge";
+      else if (S.outD && s === S.outD) cls += " edge";
+      else if (S.inD && S.outD && s > S.inD && s < S.outD) cls += " in-range";
+      h += '<button type="button" class="' + cls + ' num" data-day="' + s + '"' + (dis ? " disabled" : "") + ">" + d + "</button>";
+    }
+    return h + "</div></div>";
+  }
+  function renderCal() {
+    var v = S.view, y2 = v.m === 11 ? v.y + 1 : v.y, m2 = (v.m + 1) % 12;
+    $("calpop").innerHTML = '<div class="cal-head"><button type="button" data-nav="-1" aria-label="Previous month">‹</button><span class="meta">' + (hasDates() ? nightsBetween(S.inD, S.outD) + " " + t("nights") : "") + '</span><button type="button" data-nav="1" aria-label="Next month">›</button></div>' +
+      '<div class="months">' + monthHtml(v.y, v.m) + monthHtml(y2, m2) + '</div><div class="cal-foot">' + (S.inD && !S.outD ? (lang === "es" ? "Elige la fecha de salida" : "Now choose check-out") : "") + "</div>";
+  }
+  function renderGuests() {
+    $("guestpop").innerHTML = '<div class="step"><div><b>' + t("guests") + '</b><div class="meta">max 8</div></div><div class="ctl"><button type="button" data-g="-1" aria-label="Fewer"' + (S.guests <= 1 ? " disabled" : "") + '>−</button><b class="num">' + S.guests + '</b><button type="button" data-g="1" aria-label="More"' + (S.guests >= 8 ? " disabled" : "") + ">+</button></div></div>";
+  }
+  function closePops() { $("calpop").hidden = true; $("guestpop").hidden = true; $("datesBtn").setAttribute("aria-expanded", "false"); $("guestsBtn").setAttribute("aria-expanded", "false"); }
+
+  /* ---------- sheet: detail -> checkout -> done ---------- */
+  function linesHtml(q) {
+    return '<dl class="lines"><div><dt>' + usd(S.sel.nightly) + " × " + q.n + " " + t("accom") + '</dt><dd class="num">' + usd(q.accom) + '</dd></div>' +
+      '<div><dt>' + t("clean") + '</dt><dd class="num">' + usd(q.clean) + '</dd></div>' +
+      '<div><dt>' + t("noSvc") + '</dt><dd class="num">' + t("free") + '</dd></div>' +
+      '<div><dt>' + t("tax") + ' (IVA 16% + ISH 3%)</dt><dd class="num">' + usd(q.tax) + '</dd></div>' +
+      '<div class="total"><dt>' + t("total") + ' USD</dt><dd class="num">' + usd(q.total) + "</dd></div></dl>";
+  }
+  function openDetail(id) {
+    S.sel = P.filter(function (p) { return p.id === id; })[0];
+    var p = S.sel, q = quote(p);
+    $("sheet").innerHTML = '<div class="sheet-in"><button type="button" class="close" data-close>' + t("close") + "</button>" +
+      '<span class="ph" style="border-radius:14px;background:linear-gradient(150deg,hsl(' + p.hue + ',55%,42%),hsl(' + (p.hue + 40) + ',60%,26%))"></span>' +
+      '<div><h2 id="sheetTitle">' + p.name + '</h2><div class="meta">' + p.area + " · " + p.br + " BR · " + p.ba + " BA · " + t("g")(p.pax) + " · " + p.beach.toFixed(1) + ' km</div></div>' +
+      '<div class="chips">' + p.amen.map(function (a) { return '<span class="chip">' + a + "</span>"; }).join("") + "</div>" +
+      '<div class="box"><div class="meta" style="margin-bottom:8px">' + fmtD(S.inD) + " – " + fmtD(S.outD) + " · " + t("g")(S.guests) + "</div>" + linesHtml(q) + "</div>" +
+      '<div class="cmp"><b>' + t("noFee") + '</b><small>' + t("clearNote") + "</small></div>" +
+      '<div class="fine">' + t("cancel") + "</div>" +
+      '<button type="button" class="btn" data-reserve>' + t("reserve") + " · " + usd(q.total) + "</button></div>";
+    openSheet();
+  }
+  function openCheckout() {
+    var p = S.sel, q = quote(p);
+    $("sheet").innerHTML = '<div class="sheet-in"><button type="button" class="close" data-back>' + t("back") + "</button>" +
+      '<h2 id="sheetTitle">' + p.name + '</h2><div class="meta">' + fmtD(S.inD) + " – " + fmtD(S.outD) + " · " + t("g")(S.guests) + "</div>" +
+      '<button type="button" class="btn alt" data-wallet>' + t("walletPay") + " · " + usd(q.total) + '</button>' +
+      '<div class="meta" style="text-align:center">' + t("card") + "</div>" +
+      '<form class="form" id="payForm" novalidate>' +
+      '<label for="fName">' + t("name") + '<input type="text" id="fName" autocomplete="name"></label>' +
+      '<label for="fEmail">' + t("email") + '<input type="email" id="fEmail" autocomplete="email"></label>' +
+      '<label for="fPhone">' + t("phone") + '<input type="tel" id="fPhone" autocomplete="tel"></label>' +
+      '<div class="box"><div class="meta">Stripe Payment Element mounts here (card, Link, SPEI/OXXO later)</div></div>' +
+      '<label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="fAgree" checked> ' + t("agree") + "</label>" +
+      '<div class="err" id="fErr" role="alert"></div>' +
+      '<button type="submit" class="btn">' + t("pay") + " " + usd(q.total) + "</button></form>" +
+      '<div class="fine">' + t("cancel") + "</div></div>";
+    $("fName").focus();
+  }
+  function confirmBooking(email) {
+    var ref = "ATM-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+    $("sheet").innerHTML = '<div class="sheet-in"><div class="ok"><h2 id="sheetTitle">' + t("done") + '</h2><div class="ref">' + ref + "</div>" +
+      "<div>" + S.sel.name + " · " + fmtD(S.inD) + " – " + fmtD(S.outD) + "</div>" +
+      '<div class="meta">' + t("sent") + " " + email + '</div><div class="chip" style="justify-self:center">' + S.clicks + " clicks, start to finish</div></div>" +
+      '<button type="button" class="btn ghost" data-close>' + t("keep") + "</button></div>";
+  }
+  var lastFocus = null;
+  function openSheet() { lastFocus = document.activeElement; $("overlay").hidden = false; closePops(); var c = $("sheet").querySelector("button"); if (c) c.focus(); }
+  function closeSheet() { $("overlay").hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+
+  /* ---------- events ---------- */
+  document.addEventListener("click", function (e) {
+    var el = e.target;
+    var counted = el.closest("button, .card, .day") && !el.closest("[data-nocount]");
+    if (counted) { S.clicks++; $("clickN").textContent = S.clicks; }
+
+    var b;
+    if ((b = el.closest("#datesBtn"))) { var open = $("calpop").hidden; closePops(); if (open) { renderCal(); $("calpop").hidden = false; b.setAttribute("aria-expanded", "true"); } return; }
+    if ((b = el.closest("#guestsBtn"))) { var o2 = $("guestpop").hidden; closePops(); if (o2) { renderGuests(); $("guestpop").hidden = false; b.setAttribute("aria-expanded", "true"); } return; }
+    if ((b = el.closest("[data-nav]"))) { var d = +b.getAttribute("data-nav"); var m = S.view.m + d, y = S.view.y; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } S.view = { y: y, m: m }; renderCal(); return; }
+    if ((b = el.closest("[data-day]"))) {
+      var s = b.getAttribute("data-day");
+      if (!S.inD || (S.inD && S.outD)) { S.inD = s; S.outD = null; renderCal(); }
+      else if (s > S.inD) { S.outD = s; renderCal(); closePops(); }
+      else { S.inD = s; renderCal(); }
+      renderRail(); renderGrid(); return;
+    }
+    if ((b = el.closest("[data-g]"))) { S.guests = Math.min(8, Math.max(1, S.guests + +b.getAttribute("data-g"))); renderGuests(); renderRail(); renderGrid(); return; }
+    if ((b = el.closest(".card")) && !b.disabled) { if (!hasDates()) { renderCal(); $("calpop").hidden = false; return; } openDetail(b.getAttribute("data-id")); return; }
+    if (el.closest("[data-reserve]")) { openCheckout(); return; }
+    if (el.closest("[data-back]")) { openDetail(S.sel.id); return; }
+    if (el.closest("[data-close]") || el.id === "scrim") { closeSheet(); return; }
+    if (el.closest("[data-wallet]")) { confirmBooking("you@wallet.example"); return; }
+    if (el.closest("#resetClicks")) { S.clicks = 0; $("clickN").textContent = 0; return; }
+    if (el.closest("#langBtn")) { lang = lang === "en" ? "es" : "en"; el.closest("#langBtn").textContent = lang === "en" ? "ES" : "EN"; renderRail(); renderGrid(); return; }
+    if (!el.closest(".pop") && !el.closest(".search")) closePops();
+  });
+  document.addEventListener("submit", function (e) {
+    if (e.target.id !== "payForm") return;
+    e.preventDefault();
+    var n = $("fName").value.trim(), em = $("fEmail").value.trim(), ph = $("fPhone").value.trim();
+    if (!n || !/^\S+@\S+\.\S+$/.test(em) || ph.replace(/\D/g, "").length < 8) { $("fErr").textContent = lang === "es" ? "Revisa nombre, correo y teléfono." : "Check your name, email and phone number."; return; }
+    if (!$("fAgree").checked) { $("fErr").textContent = lang === "es" ? "Acepta el reglamento para continuar." : "Accept the house rules to continue."; return; }
+    confirmBooking(em);
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (!$("overlay").hidden) closeSheet(); else closePops(); } });
+
+  renderRail(); renderGrid();
+})();
+</script>

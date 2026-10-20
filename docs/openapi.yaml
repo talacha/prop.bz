@@ -1,0 +1,367 @@
+openapi: 3.1.0
+info:
+  title: ATM Direct Booking API
+  version: 1.0.0
+  description: |
+    Direct-booking API for A Toda Madre Properties. Money is integer minor units.
+    Dates are local to the property timezone, stay interval is [check_in, check_out).
+servers:
+  - url: https://api.example.com/v1
+security:
+  - bearerAuth: []
+tags: [{name: Auth}, {name: Properties}, {name: Quotes}, {name: Bookings}, {name: Payments}, {name: Messaging}, {name: Reviews}, {name: Host}, {name: Webhooks}]
+
+paths:
+  /auth/otp/request:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Send a one-time code / magic link to an email
+      requestBody:
+        required: true
+        content: {application/json: {schema: {type: object, required: [email], properties: {email: {type: string, format: email}, captcha_token: {type: string}}}}}
+      responses:
+        '202': {description: Always 202 (no account enumeration)}
+        '429': {$ref: '#/components/responses/RateLimited'}
+  /auth/otp/verify:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Exchange code for tokens
+      requestBody:
+        required: true
+        content: {application/json: {schema: {type: object, required: [email, code], properties: {email: {type: string, format: email}, code: {type: string, pattern: '^[0-9]{6}$'}}}}}
+      responses:
+        '200': {description: Tokens, content: {application/json: {schema: {$ref: '#/components/schemas/TokenPair'}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Rotate refresh token (reuse detection revokes the family)
+      requestBody:
+        required: true
+        content: {application/json: {schema: {type: object, required: [refresh_token], properties: {refresh_token: {type: string}}}}}
+      responses:
+        '200': {description: Tokens, content: {application/json: {schema: {$ref: '#/components/schemas/TokenPair'}}}}
+  /me:
+    get:
+      tags: [Auth]
+      summary: Current user
+      responses: {'200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/User'}}}}}
+    delete:
+      tags: [Auth]
+      summary: Erase account (anonymises PII; financial records retained as required by law)
+      responses: {'202': {description: Accepted}}
+
+  /properties:
+    get:
+      tags: [Properties]
+      security: []
+      summary: Search properties
+      parameters:
+        - {name: check_in, in: query, schema: {type: string, format: date}}
+        - {name: check_out, in: query, schema: {type: string, format: date}}
+        - {name: guests, in: query, schema: {type: integer, minimum: 1}}
+        - {name: bbox, in: query, description: 'minLng,minLat,maxLng,maxLat', schema: {type: string}}
+        - {name: min_price, in: query, schema: {type: integer}}
+        - {name: max_price, in: query, schema: {type: integer}}
+        - {name: bedrooms, in: query, schema: {type: integer}}
+        - {name: amenities, in: query, style: form, explode: false, schema: {type: array, items: {type: string}}}
+        - {name: listing_type, in: query, schema: {type: string, enum: [short_term, long_term, sale]}}
+        - {name: sort, in: query, schema: {type: string, enum: [recommended, price_asc, price_desc, rating]}}
+        - {$ref: '#/components/parameters/Limit'}
+        - {$ref: '#/components/parameters/Cursor'}
+        - {name: Accept-Language, in: header, schema: {type: string, example: 'es-MX'}}
+      responses:
+        '200':
+          description: Page of results (prices are total-for-stay when dates are supplied)
+          content: {application/json: {schema: {$ref: '#/components/schemas/PropertyPage'}}}
+  /properties/{property}:
+    get:
+      tags: [Properties]
+      security: []
+      parameters: [{$ref: '#/components/parameters/Property'}]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/Property'}}}}
+        '404': {$ref: '#/components/responses/Problem'}
+  /properties/{property}/availability:
+    get:
+      tags: [Properties]
+      security: []
+      summary: Per-night availability, price and min-stay rules for a date range (max 366 days)
+      parameters:
+        - {$ref: '#/components/parameters/Property'}
+        - {name: from, in: query, required: true, schema: {type: string, format: date}}
+        - {name: to, in: query, required: true, schema: {type: string, format: date}}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  days:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: {type: string, format: date}
+                        available: {type: boolean}
+                        price: {$ref: '#/components/schemas/Money'}
+                        min_stay: {type: integer}
+                        closed_to_arrival: {type: boolean}
+                        closed_to_departure: {type: boolean}
+
+  /quotes:
+    post:
+      tags: [Quotes]
+      security: []
+      summary: Price a stay (server-authoritative, signed, 15 min TTL)
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/QuoteRequest'}}}
+      responses:
+        '200': {description: Quote, content: {application/json: {schema: {$ref: '#/components/schemas/Quote'}}}}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+
+  /bookings:
+    post:
+      tags: [Bookings]
+      summary: Create booking from a quote; holds dates for 15 min
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/BookingCreate'}}}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/Booking'}}}}
+        '409': {$ref: '#/components/responses/Problem'}
+        '410': {$ref: '#/components/responses/Problem'}
+    get:
+      tags: [Bookings]
+      summary: My bookings
+      parameters: [{$ref: '#/components/parameters/Limit'}, {$ref: '#/components/parameters/Cursor'}, {name: status, in: query, schema: {$ref: '#/components/schemas/BookingStatus'}}]
+      responses: {'200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/BookingPage'}}}}}
+  /bookings/{booking}:
+    get:
+      tags: [Bookings]
+      parameters: [{$ref: '#/components/parameters/BookingId'}]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/Booking'}}}}
+        '404': {$ref: '#/components/responses/Problem'}
+  /bookings/{booking}/cancel:
+    post:
+      tags: [Bookings]
+      summary: Cancel; refund computed from the policy snapshot taken at booking time
+      parameters: [{$ref: '#/components/parameters/BookingId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      responses:
+        '200': {description: Cancelled with refund breakdown, content: {application/json: {schema: {$ref: '#/components/schemas/Booking'}}}}
+  /bookings/{booking}/payment-intent:
+    post:
+      tags: [Payments]
+      summary: Create/refresh Stripe PaymentIntent for the amount due now
+      parameters: [{$ref: '#/components/parameters/BookingId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {type: object, properties: {client_secret: {type: string}, amount_due: {$ref: '#/components/schemas/Money'}}}}}
+  /bookings/{booking}/itinerary:
+    get:
+      tags: [Bookings]
+      summary: Address, door codes, check-in instructions (only after payment; door codes only within 48h of check-in)
+      parameters: [{$ref: '#/components/parameters/BookingId'}]
+      responses: {'200': {description: OK}}
+
+  /threads/{thread}/messages:
+    get:
+      tags: [Messaging]
+      parameters: [{name: thread, in: path, required: true, schema: {type: string, format: uuid}}, {$ref: '#/components/parameters/Cursor'}]
+      responses: {'200': {description: OK}}
+    post:
+      tags: [Messaging]
+      parameters: [{name: thread, in: path, required: true, schema: {type: string, format: uuid}}]
+      requestBody: {required: true, content: {application/json: {schema: {type: object, required: [body], properties: {body: {type: string, maxLength: 4000}}}}}}
+      responses: {'201': {description: Created}}
+  /inquiries:
+    post:
+      tags: [Messaging]
+      security: []
+      summary: Pre-booking question (replaces the legacy contact form)
+      requestBody:
+        required: true
+        content: {application/json: {schema: {type: object, required: [property_id, name, email, message, captcha_token], properties: {property_id: {type: string, format: uuid}, name: {type: string}, email: {type: string, format: email}, message: {type: string, maxLength: 2000}, captcha_token: {type: string}}}}}
+      responses: {'202': {description: Accepted}}
+
+  /bookings/{booking}/review:
+    post:
+      tags: [Reviews]
+      summary: Double-blind review, 14-day window after check-out
+      parameters: [{$ref: '#/components/parameters/BookingId'}]
+      requestBody: {required: true, content: {application/json: {schema: {type: object, required: [rating], properties: {rating: {type: integer, minimum: 1, maximum: 5}, categories: {type: object, additionalProperties: {type: integer}}, comment: {type: string, maxLength: 3000}}}}}}
+      responses: {'201': {description: Created}}
+
+  /host/properties:
+    get: {tags: [Host], summary: My properties, responses: {'200': {description: OK}}}
+    post:
+      tags: [Host]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PropertyWrite'}}}}
+      responses: {'201': {description: Created}}
+  /host/properties/{property}/pricing:
+    put:
+      tags: [Host]
+      parameters: [{$ref: '#/components/parameters/Property'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/Pricing'}}}}
+      responses: {'200': {description: OK}}
+  /host/properties/{property}/calendar:
+    put:
+      tags: [Host]
+      summary: Block dates / override nightly prices
+      parameters: [{$ref: '#/components/parameters/Property'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {type: object, properties: {blocks: {type: array, items: {type: object, required: [from, to], properties: {from: {type: string, format: date}, to: {type: string, format: date}, reason: {type: string}}}}, price_overrides: {type: array, items: {type: object, required: [from, to, price], properties: {from: {type: string, format: date}, to: {type: string, format: date}, price: {$ref: '#/components/schemas/Money'}}}}}}}}
+      responses: {'200': {description: OK}}
+  /host/invoices:
+    post:
+      tags: [Host]
+      summary: Request a CFDI 4.0 invoice for a booking (guest fiscal data)
+      requestBody:
+        required: true
+        content: {application/json: {schema: {type: object, required: [booking_id, rfc, legal_name, tax_regime, postal_code, cfdi_use], properties: {booking_id: {type: string, format: uuid}, rfc: {type: string}, legal_name: {type: string}, tax_regime: {type: string}, postal_code: {type: string}, cfdi_use: {type: string}}}}}
+      responses: {'202': {description: Accepted; invoice issued asynchronously through the PAC}}
+  /host/payout-account:
+    post:
+      tags: [Host]
+      summary: Phase 2 only (multi-owner). Create Stripe Connect onboarding link
+      responses: {'200': {description: OK, content: {application/json: {schema: {type: object, properties: {url: {type: string, format: uri}}}}}}}
+  /host/bookings/{booking}/approve:
+    post: {tags: [Host], parameters: [{$ref: '#/components/parameters/BookingId'}], responses: {'200': {description: OK}}}
+  /host/bookings/{booking}/decline:
+    post: {tags: [Host], parameters: [{$ref: '#/components/parameters/BookingId'}], responses: {'200': {description: OK}}}
+  /host/webhook-endpoints:
+    post:
+      tags: [Webhooks]
+      requestBody: {required: true, content: {application/json: {schema: {type: object, required: [url, events], properties: {url: {type: string, format: uri}, events: {type: array, items: {type: string}}}}}}}
+      responses: {'201': {description: Created; signing secret shown once}}
+
+  /webhooks/stripe:
+    post:
+      tags: [Webhooks]
+      security: []
+      summary: Stripe events. Verified with Stripe-Signature; deduped by event id.
+      responses: {'200': {description: OK}, '400': {description: Bad signature}}
+
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+    apiKey: {type: apiKey, in: header, name: X-API-Key}
+  parameters:
+    Property: {name: property, in: path, required: true, description: UUID or slug, schema: {type: string}}
+    BookingId: {name: booking, in: path, required: true, schema: {type: string, format: uuid}}
+    Limit: {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
+    Cursor: {name: cursor, in: query, schema: {type: string}}
+    IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, format: uuid}}
+  responses:
+    Problem: {description: Error, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+    RateLimited: {description: Too many requests, headers: {Retry-After: {schema: {type: integer}}}, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  schemas:
+    Money:
+      type: object
+      required: [amount, currency]
+      properties: {amount: {type: integer, description: minor units}, currency: {type: string, enum: [MXN, USD]}}
+    Problem:
+      type: object
+      required: [type, title, status, code]
+      properties: {type: {type: string}, title: {type: string}, status: {type: integer}, code: {type: string}, detail: {type: string}, request_id: {type: string}, errors: {type: array, items: {type: object}}}
+    TokenPair:
+      type: object
+      properties: {access_token: {type: string}, refresh_token: {type: string}, expires_in: {type: integer}}
+    User:
+      type: object
+      properties: {id: {type: string, format: uuid}, email: {type: string}, name: {type: string}, phone: {type: string}, roles: {type: array, items: {type: string}}, locale: {type: string}}
+    Property:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        slug: {type: string}
+        title: {type: object, additionalProperties: {type: string}, description: 'locale -> text'}
+        description: {type: object, additionalProperties: {type: string}}
+        listing_types: {type: array, items: {type: string}}
+        location: {type: object, properties: {lat: {type: number}, lng: {type: number}, approx_radius_m: {type: integer}, neighborhood: {type: string}, city: {type: string}}}
+        capacity: {type: object, properties: {guests: {type: integer}, bedrooms: {type: integer}, beds: {type: integer}, bathrooms: {type: number}}}
+        beds: {type: array, items: {type: object, properties: {type: {type: string}, count: {type: integer}}}}
+        amenities: {type: array, items: {type: object, properties: {code: {type: string}, value: {type: [string, integer, boolean, 'null']}}}}
+        photos: {type: array, items: {type: object, properties: {id: {type: string}, alt: {type: string}, blurhash: {type: string}, srcset: {type: object}}}}
+        from_price: {$ref: '#/components/schemas/Money'}
+        rating: {type: object, properties: {average: {type: number}, count: {type: integer}}}
+        rules: {type: object}
+        cancellation_policy: {type: object}
+        instant_book: {type: boolean}
+    PropertyWrite:
+      type: object
+      required: [title, capacity, location]
+      properties: {title: {type: object}, description: {type: object}, capacity: {type: object}, location: {type: object}}
+    PropertyPage:
+      type: object
+      properties: {data: {type: array, items: {$ref: '#/components/schemas/Property'}}, next_cursor: {type: [string, 'null']}}
+    Pricing:
+      type: object
+      required: [currency, base_nightly]
+      properties:
+        currency: {type: string, enum: [MXN, USD]}
+        base_nightly: {type: integer}
+        weekend_nightly: {type: integer}
+        cleaning_fee: {type: integer}
+        extra_guest_fee: {type: integer}
+        extra_guest_after: {type: integer}
+        weekly_discount_pct: {type: number}
+        monthly_discount_pct: {type: number}
+        seasons: {type: array, items: {type: object, properties: {from: {type: string, format: date}, to: {type: string, format: date}, nightly: {type: integer}, min_stay: {type: integer}}}}
+        payment_schedule: {type: string, enum: [full_upfront, deposit_balance, pay_at_property]}
+    QuoteRequest:
+      type: object
+      required: [property_id, check_in, check_out, guests]
+      properties:
+        property_id: {type: string, format: uuid}
+        check_in: {type: string, format: date}
+        check_out: {type: string, format: date}
+        guests: {type: object, properties: {adults: {type: integer, minimum: 1}, children: {type: integer}, pets: {type: integer}}}
+        promo_code: {type: string}
+        currency: {type: string, enum: [MXN, USD]}
+    Quote:
+      type: object
+      properties:
+        quote_id: {type: string}
+        expires_at: {type: string, format: date-time}
+        nights: {type: array, items: {type: object, properties: {date: {type: string, format: date}, price: {$ref: '#/components/schemas/Money'}}}}
+        lines: {type: array, items: {type: object, properties: {type: {type: string, enum: [accommodation, cleaning_fee, extra_guest, discount, platform_fee, tax_iva, tax_ish, other]}, label: {type: string}, amount: {$ref: '#/components/schemas/Money'}}}}
+        total: {$ref: '#/components/schemas/Money'}
+        due_now: {$ref: '#/components/schemas/Money'}
+        cancellation_policy: {type: object}
+    BookingCreate:
+      type: object
+      required: [quote_id, guest, accept_terms]
+      properties:
+        quote_id: {type: string}
+        guest: {type: object, required: [name, email, phone], properties: {name: {type: string}, email: {type: string, format: email}, phone: {type: string}, country: {type: string}}}
+        message: {type: string}
+        accept_terms: {type: boolean, const: true}
+    BookingStatus: {type: string, enum: [requested, pending_payment, confirmed, checked_in, completed, cancelled_by_guest, cancelled_by_host, declined, expired]}
+    Booking:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        reference: {type: string, example: ATM-7K3F9Q}
+        status: {$ref: '#/components/schemas/BookingStatus'}
+        property_id: {type: string, format: uuid}
+        check_in: {type: string, format: date}
+        check_out: {type: string, format: date}
+        total: {$ref: '#/components/schemas/Money'}
+        amount_paid: {$ref: '#/components/schemas/Money'}
+        hold_expires_at: {type: [string, 'null'], format: date-time}
+        client_secret: {type: string}
+    BookingPage:
+      type: object
+      properties: {data: {type: array, items: {$ref: '#/components/schemas/Booking'}}, next_cursor: {type: [string, 'null']}}
